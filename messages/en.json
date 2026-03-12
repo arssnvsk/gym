@@ -1,0 +1,76 @@
+{
+  "app": {
+    "title": "Gym Tracker",
+    "tagline": "Track your progress"
+  },
+  "auth": {
+    "signIn": "Sign in with Google",
+    "signOut": "Sign out",
+    "signInTitle": "Welcome",
+    "signInSubtitle": "Sign in to track your progress"
+  },
+  "home": {
+    "addSet": "Add Set",
+    "exercises": "Exercises",
+    "lastWeight": "Last weight",
+    "lastReps": "Reps",
+    "noData": "No data",
+    "kg": "kg"
+  },
+  "addSet": {
+    "title": "New Set",
+    "exercise": "Exercise",
+    "selectExercise": "Select exercise",
+    "weight": "Weight (kg)",
+    "reps": "Reps",
+    "editTitle": "Edit Set",
+    "saveEdit": "Save",
+    "save": "Save",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "success": "Set added!"
+  },
+  "exercise": {
+    "backToHome": "Back",
+    "weightChart": "Max Weight",
+    "repsChart": "Reps",
+    "chartKg": "kg",
+    "chartReps": "reps",
+    "history": "History",
+    "historyDate": "Date",
+    "historyWeight": "Weight",
+    "historyReps": "Reps",
+    "noData": "No data yet. Add your first set!",
+    "pr": "Personal Record",
+    "volumeChart": "Training Volume",
+    "lastVolume": "Last Session",
+    "volumeHint": "kg × reps per day",
+    "editSet": "Edit",
+    "deleteSet": "Delete",
+    "confirmDelete": "Yes, delete",
+    "cancelDelete": "Cancel",
+    "progress": "Progress",
+    "regression": "Regression"
+  },
+  "exercises": {
+    "bench_press": "Bench Press",
+    "incline_press": "Incline Press",
+    "squat": "Barbell Squat",
+    "leg_press": "Leg Press",
+    "deadlift": "Deadlift",
+    "barbell_row": "Barbell Row",
+    "lat_pulldown": "Lat Pulldown",
+    "overhead_press": "Overhead Press",
+    "pull_up": "Pull-up",
+    "dip": "Dip",
+    "bicep_curl": "Bicep Curl",
+    "tricep_pushdown": "Tricep Pushdown"
+  },
+  "categories": {
+    "chest": "Chest",
+    "legs": "Legs",
+    "back": "Back",
+    "shoulders": "Shoulders",
+    "arms": "Arms"
+  }
+}

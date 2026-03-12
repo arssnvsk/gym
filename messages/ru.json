@@ -1,0 +1,76 @@
+{
+  "app": {
+    "title": "Тренировки",
+    "tagline": "Следи за прогрессом"
+  },
+  "auth": {
+    "signIn": "Войти через Google",
+    "signOut": "Выйти",
+    "signInTitle": "Добро пожаловать",
+    "signInSubtitle": "Войдите, чтобы следить за своим прогрессом"
+  },
+  "home": {
+    "addSet": "Добавить подход",
+    "exercises": "Упражнения",
+    "lastWeight": "Последний вес",
+    "lastReps": "Повт.",
+    "noData": "Нет данных",
+    "kg": "кг"
+  },
+  "addSet": {
+    "title": "Новый подход",
+    "exercise": "Упражнение",
+    "selectExercise": "Выберите упражнение",
+    "weight": "Вес (кг)",
+    "reps": "Повторения",
+    "editTitle": "Редактировать подход",
+    "saveEdit": "Сохранить",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "saving": "Сохранение...",
+    "success": "Подход добавлен!"
+  },
+  "exercise": {
+    "backToHome": "Назад",
+    "weightChart": "Максимальный вес",
+    "repsChart": "Повторения",
+    "chartKg": "кг",
+    "chartReps": "повт.",
+    "history": "История",
+    "historyDate": "Дата",
+    "historyWeight": "Вес",
+    "historyReps": "Повт.",
+    "noData": "Нет данных. Добавьте первый подход!",
+    "pr": "Личный рекорд",
+    "volumeChart": "Объём тренировки",
+    "lastVolume": "Последняя сессия",
+    "volumeHint": "кг × повт. за день",
+    "editSet": "Редактировать",
+    "deleteSet": "Удалить",
+    "confirmDelete": "Да, удалить",
+    "cancelDelete": "Отмена",
+    "progress": "Прогресс",
+    "regression": "Регресс"
+  },
+  "exercises": {
+    "bench_press": "Жим лёжа",
+    "incline_press": "Жим наклонный",
+    "squat": "Приседания со штангой",
+    "leg_press": "Жим платформы ногами",
+    "deadlift": "Становая тяга",
+    "barbell_row": "Тяга штанги в наклоне",
+    "lat_pulldown": "Тяга верхнего блока",
+    "overhead_press": "Жим стоя",
+    "pull_up": "Подтягивания",
+    "dip": "Отжимания на брусьях",
+    "bicep_curl": "Сгибания на бицепс",
+    "tricep_pushdown": "Разгибания трицепса"
+  },
+  "categories": {
+    "chest": "Грудь",
+    "legs": "Ноги",
+    "back": "Спина",
+    "shoulders": "Плечи",
+    "arms": "Руки"
+  }
+}
