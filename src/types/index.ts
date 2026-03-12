@@ -2,7 +2,7 @@ export interface Exercise {
   id: string;
   nameKey: string; // i18n key
   icon: string;
-  category: 'chest' | 'legs' | 'back' | 'shoulders' | 'arms';
+  category: 'chest' | 'legs' | 'back' | 'shoulders' | 'arms' | 'core';
 }
 
 export interface WorkoutSet {

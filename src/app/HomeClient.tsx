@@ -19,6 +19,7 @@ export default function HomeClient({ user }: HomeClientProps) {
   const [showModal, setShowModal] = useState(false);
   const [lastSets, setLastSets] = useState<Record<string, WorkoutSet>>({});
   const [loaded, setLoaded] = useState(false);
+  const [query, setQuery] = useState('');
 
   const loadLastSets = useCallback(async () => {
     try {
@@ -39,17 +40,39 @@ export default function HomeClient({ user }: HomeClientProps) {
     loadLastSets();
   }
 
-  // Group exercises by category in desired order
+  const q = query.trim().toLowerCase();
   const grouped = CATEGORY_ORDER.map((cat) => ({
     category: cat,
-    exercises: EXERCISES.filter((ex) => ex.category === cat),
-  }));
+    exercises: EXERCISES.filter((ex) =>
+      ex.category === cat && (!q || t(ex.nameKey).toLowerCase().includes(q))
+    ),
+  })).filter(({ exercises }) => exercises.length > 0);
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header user={user} />
 
       <main className="flex-1 px-4 pb-28 pt-4">
+        {/* Search */}
+        <div className="relative mb-5">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#444] text-sm pointer-events-none">🔍</span>
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('home.search')}
+            className="w-full bg-[#141414] border border-[#1F1F1F] text-white rounded-xl pl-9 pr-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors placeholder:text-[#444]"
+          />
+          {query && (
+            <button
+              onClick={() => setQuery('')}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#444] hover:text-white transition-colors text-lg leading-none"
+            >
+              ×
+            </button>
+          )}
+        </div>
+
         {grouped.map(({ category, exercises }) => (
           <section key={category} className="mb-6">
             <h2 className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-3">
