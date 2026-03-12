@@ -1,14 +1,21 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import type { User } from '@supabase/supabase-js';
 import Header from '@/components/Header';
 import ExerciseCard from '@/components/ExerciseCard';
 import AddSetModal from '@/components/AddSetModal';
+import StopwatchModal from '@/components/StopwatchModal';
 import { EXERCISES, CATEGORY_ORDER } from '@/lib/exercises';
 import { getLastSetPerExercise } from '@/lib/sets';
 import type { WorkoutSet } from '@/types';
+
+function formatTimeShort(ms: number) {
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}с`;
+}
 
 interface HomeClientProps {
   user: User;
@@ -20,6 +27,35 @@ export default function HomeClient({ user }: HomeClientProps) {
   const [lastSets, setLastSets] = useState<Record<string, WorkoutSet>>({});
   const [loaded, setLoaded] = useState(false);
   const [query, setQuery] = useState('');
+
+  // Stopwatch
+  const [showStopwatch, setShowStopwatch] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [running, setRunning] = useState(false);
+  const startedAtRef = useRef<number | null>(null);
+  const baseElapsedRef = useRef(0);
+
+  useEffect(() => {
+    if (!running) return;
+    const id = setInterval(() => {
+      setElapsed(baseElapsedRef.current + Date.now() - startedAtRef.current!);
+    }, 100);
+    return () => clearInterval(id);
+  }, [running]);
+
+  function handleStart() {
+    startedAtRef.current = Date.now();
+    setRunning(true);
+  }
+  function handlePause() {
+    baseElapsedRef.current = elapsed;
+    setRunning(false);
+  }
+  function handleReset() {
+    setRunning(false);
+    baseElapsedRef.current = 0;
+    setElapsed(0);
+  }
 
   const loadLastSets = useCallback(async () => {
     try {
@@ -92,10 +128,27 @@ export default function HomeClient({ user }: HomeClientProps) {
       </main>
 
       {/* FAB */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4 flex gap-3">
+        {/* Stopwatch button */}
+        <button
+          onClick={() => setShowStopwatch(true)}
+          className={`flex flex-col items-center justify-center gap-0.5 rounded-2xl transition-all active:scale-95 border ${
+            running
+              ? 'bg-[#FF5722]/10 border-[#FF5722]/40 text-[#FF5722] shadow-lg shadow-[#FF5722]/20 w-20'
+              : 'bg-[#141414] border-[#1F1F1F] text-[#888] hover:text-white hover:border-[#333] w-14'
+          }`}
+        >
+          <span className="text-xl leading-none">⏱</span>
+          {running && (
+            <span className="text-[10px] font-mono font-semibold tabular-nums leading-none">
+              {formatTimeShort(elapsed)}
+            </span>
+          )}
+        </button>
+
         <button
           onClick={() => setShowModal(true)}
-          className="w-full flex items-center justify-center gap-2 bg-[#FF5722] hover:bg-[#FF6D3A] text-white font-semibold py-4 rounded-2xl shadow-lg shadow-[#FF5722]/30 transition-all active:scale-95 text-base"
+          className="flex-1 flex items-center justify-center gap-2 bg-[#FF5722] hover:bg-[#FF6D3A] text-white font-semibold py-4 rounded-2xl shadow-lg shadow-[#FF5722]/30 transition-all active:scale-95 text-base"
         >
           <span className="text-xl">+</span>
           {t('home.addSet')}
@@ -107,6 +160,17 @@ export default function HomeClient({ user }: HomeClientProps) {
           onClose={() => setShowModal(false)}
           onSuccess={handleSuccess}
           userId={user.id}
+        />
+      )}
+
+      {showStopwatch && (
+        <StopwatchModal
+          elapsed={elapsed}
+          running={running}
+          onStart={handleStart}
+          onPause={handlePause}
+          onReset={handleReset}
+          onClose={() => setShowStopwatch(false)}
         />
       )}
     </div>

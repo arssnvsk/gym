@@ -53,6 +53,13 @@
     "progress": "Progress",
     "regression": "Regression"
   },
+  "stopwatch": {
+    "title": "Stopwatch",
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "reset": "Reset"
+  },
   "exercises": {
     "bench_press": "Bench Press",
     "incline_press": "Incline Press",
