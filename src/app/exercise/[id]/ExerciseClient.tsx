@@ -7,6 +7,7 @@ import type { Exercise, WorkoutSet } from '@/types';
 import { getSetsByExercise, toVolumeChartData, getPersonalRecord, deleteSet } from '@/lib/sets';
 import ProgressChart from '@/components/ProgressChart';
 import AddSetModal from '@/components/AddSetModal';
+import MuscleMap from '@/components/MuscleMap';
 
 interface ExerciseClientProps {
   exercise: Exercise;
@@ -104,13 +105,23 @@ export default function ExerciseClient({ exercise, userId }: ExerciseClientProps
               <div key={i} className="bg-[#141414] border border-[#1F1F1F] rounded-2xl p-4 h-40 animate-pulse" />
             ))}
           </div>
-        ) : sets.length === 0 ? (
-          <div className="text-center py-16 text-[#555]">
-            <div className="text-4xl mb-3">📊</div>
-            <p className="text-sm">{t('exercise.noData')}</p>
-          </div>
         ) : (
           <>
+            {/* Muscle map — always visible */}
+            <div className="bg-[#141414] border border-[#1F1F1F] rounded-2xl p-4">
+              <p className="text-sm font-semibold text-white mb-4">{t('exercise.muscles')}</p>
+              <MuscleMap
+                primary={exercise.muscles.primary}
+                secondary={exercise.muscles.secondary}
+              />
+            </div>
+
+            {sets.length === 0 ? (
+              <div className="text-center py-10 text-[#555]">
+                <div className="text-4xl mb-3">📊</div>
+                <p className="text-sm">{t('exercise.noData')}</p>
+              </div>
+            ) : (<>
             {/* PR + Volume row */}
             <div className="grid grid-cols-2 gap-3">
               {/* Personal Record */}
@@ -231,6 +242,7 @@ export default function ExerciseClient({ exercise, userId }: ExerciseClientProps
                 </tbody>
               </table>
             </div>
+          </>)}
           </>
         )}
       </main>

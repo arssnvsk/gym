@@ -1,8 +1,16 @@
+export type MuscleGroup =
+  | 'chest' | 'front_delts' | 'side_delts' | 'rear_delts'
+  | 'biceps' | 'triceps' | 'forearms'
+  | 'upper_back' | 'lats' | 'lower_back'
+  | 'abs' | 'obliques'
+  | 'glutes' | 'quads' | 'hamstrings' | 'calves';
+
 export interface Exercise {
   id: string;
   nameKey: string; // i18n key
   icon: string;
   category: 'chest' | 'legs' | 'back' | 'shoulders' | 'arms' | 'core';
+  muscles: { primary: MuscleGroup[]; secondary: MuscleGroup[] };
 }
 
 export interface WorkoutSet {
