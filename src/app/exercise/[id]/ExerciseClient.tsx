@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { Exercise, WorkoutSet } from '@/types';
 import { getSetsByExercise, getSetsByExerciseCached, toVolumeChartData, getPersonalRecord, deleteSet } from '@/lib/sets';
@@ -139,13 +138,13 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
     <div className="flex flex-col min-h-screen">
       {/* Header */}
       <header className="sticky top-0 z-10 flex items-center gap-3 px-4 py-1 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-[#1F1F1F]">
-        <Link
-          href="/"
+        <button
+          onClick={() => router.back()}
           className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[#888] hover:text-white active:bg-white/5 transition-colors text-sm font-medium"
         >
           <span className="text-lg leading-none">‹</span>
           <span>{t('exercise.backToHome')}</span>
-        </Link>
+        </button>
       </header>
 
       <main className="flex-1 px-4 py-5 pb-28 space-y-5">
