@@ -27,14 +27,14 @@ function formatTimeShort(ms: number) {
   return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}с`;
 }
 
-export default function HomeClient({ initialPreferences }: { initialPreferences: UserPreferences }) {
+export default function HomeClient({ initialPreferences, initialStreak }: { initialPreferences: UserPreferences; initialStreak: number }) {
   const t = useTranslations();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [lastSets, setLastSets] = useState<Record<string, WorkoutSet>>({});
   const [query, setQuery] = useState('');
-  const [streak, setStreak] = useState(0);
+  const [streak, setStreak] = useState(initialStreak);
   const [streakInfoOpen, setStreakInfoOpen] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [layout] = useState(initialPreferences.exerciseLayout);
