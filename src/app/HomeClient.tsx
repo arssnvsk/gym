@@ -163,7 +163,6 @@ export default function HomeClient({ initialPreferences, initialStreak }: { init
 
         {grouped.map(({ category, exercises }) => {
           const isCollapsed = collapsedCategories.has(category);
-          const trainedCount = exercises.filter(ex => lastSets[ex.id]).length;
           return (
             <section key={category} className="mb-2">
               <button
@@ -174,15 +173,17 @@ export default function HomeClient({ initialPreferences, initialStreak }: { init
                 })}
                 className="w-full flex items-center justify-between py-2 mb-1 active:opacity-70 transition-opacity"
               >
-                <div className="flex items-center gap-2">
-                  <span className={`text-[10px] transition-transform duration-200 text-[#444] ${isCollapsed ? '' : 'rotate-90'}`}>▶</span>
-                  <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">
-                    {t(`categories.${category}`)}
-                  </span>
-                </div>
-                <span className="text-xs text-[#333]">
-                  {trainedCount}/{exercises.length}
+                <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">
+                  {t(`categories.${category}`)}
                 </span>
+                <div className="flex items-center gap-1.5">
+                  <svg
+                    width="12" height="12" viewBox="0 0 12 12" fill="none"
+                    className={`text-[#444] transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`}
+                  >
+                    <path d="M2 4.5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
               </button>
               {!isCollapsed && (
                 <div className={`grid gap-1.5 mb-4 ${layout === 'grid' ? 'grid-cols-2 gap-3' : 'grid-cols-1'}`}>
