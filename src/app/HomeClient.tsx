@@ -137,7 +137,7 @@ export default function HomeClient() {
 
       {/* FAB */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4 flex gap-3">
-        {/* Stopwatch button */}
+        {/* Stopwatch */}
         <button
           onClick={() => setShowStopwatch(true)}
           className={`flex flex-col items-center justify-center gap-0.5 rounded-2xl transition-all active:scale-95 border ${
@@ -154,20 +154,13 @@ export default function HomeClient() {
           )}
         </button>
 
+        {/* Add set */}
         <button
           onClick={() => setShowModal(true)}
           className="flex-1 flex items-center justify-center gap-2 bg-[#FF5722] hover:bg-[#FF6D3A] text-white font-semibold py-4 rounded-2xl shadow-lg shadow-[#FF5722]/30 transition-all active:scale-95 text-base"
         >
           <span className="text-xl">+</span>
           {t('home.addSet')}
-        </button>
-
-        {/* Day stats button */}
-        <button
-          onClick={() => router.push('/day')}
-          className="flex items-center justify-center rounded-2xl transition-all active:scale-95 border bg-[#141414] border-[#1F1F1F] text-[#888] hover:text-white hover:border-[#333] w-14"
-        >
-          <span className="text-xl leading-none">📊</span>
         </button>
       </div>
 
