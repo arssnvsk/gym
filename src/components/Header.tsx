@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 
 interface HeaderProps {
-  user: User;
+  user: User | null;
 }
 
 export default function Header({ user }: HeaderProps) {
@@ -20,8 +20,8 @@ export default function Header({ user }: HeaderProps) {
     router.refresh();
   }
 
-  const initials = user.email?.slice(0, 2).toUpperCase() ?? 'U';
-  const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
+  const initials = user?.email?.slice(0, 2).toUpperCase() ?? '..';
+  const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
 
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-[#1F1F1F]">
@@ -39,12 +39,14 @@ export default function Header({ user }: HeaderProps) {
             {initials}
           </div>
         )}
-        <button
-          onClick={handleSignOut}
-          className="text-xs text-[#888] hover:text-white transition-colors px-2 py-1 rounded hover:bg-[#1F1F1F]"
-        >
-          {t('auth.signOut')}
-        </button>
+        {user && (
+          <button
+            onClick={handleSignOut}
+            className="text-xs text-[#888] hover:text-white transition-colors px-2 py-1 rounded hover:bg-[#1F1F1F]"
+          >
+            {t('auth.signOut')}
+          </button>
+        )}
       </div>
     </header>
   );

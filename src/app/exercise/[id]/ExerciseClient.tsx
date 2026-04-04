@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { Exercise, WorkoutSet } from '@/types';
-import { getSetsByExercise, toVolumeChartData, getPersonalRecord, deleteSet } from '@/lib/sets';
+import { getSetsByExercise, getSetsByExerciseCached, toVolumeChartData, getPersonalRecord, deleteSet } from '@/lib/sets';
 import { createClient } from '@/lib/supabase/client';
 import ProgressChart from '@/components/ProgressChart';
 import AddSetModal from '@/components/AddSetModal';
@@ -27,10 +27,17 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
   const [deleting, setDeleting] = useState(false);
 
   const loadSets = useCallback(async () => {
-    setLoading(true);
+    // Show cached data from IndexedDB immediately — no skeleton needed
+    const cached = await getSetsByExerciseCached(exercise.id);
+    if (cached.length > 0) {
+      setSets(cached);
+      setLoading(false);
+    }
+
+    // Refresh from Supabase silently in background
     try {
-      const data = await getSetsByExercise(exercise.id);
-      setSets(data);
+      const fresh = await getSetsByExercise(exercise.id);
+      setSets(fresh);
     } finally {
       setLoading(false);
     }

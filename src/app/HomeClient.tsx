@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { User } from '@supabase/supabase-js';
+import { createClient } from '@/lib/supabase/client';
 import Header from '@/components/Header';
 import ExerciseCard from '@/components/ExerciseCard';
 import AddSetModal from '@/components/AddSetModal';
 import StopwatchModal from '@/components/StopwatchModal';
 import { EXERCISES, CATEGORY_ORDER } from '@/lib/exercises';
-import { getLastSetPerExercise } from '@/lib/sets';
+import { getLastSetPerExercise, getLastSetPerExerciseCached } from '@/lib/sets';
 import type { WorkoutSet } from '@/types';
 
 function formatTimeShort(ms: number) {
@@ -17,15 +19,12 @@ function formatTimeShort(ms: number) {
   return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}с`;
 }
 
-interface HomeClientProps {
-  user: User;
-}
-
-export default function HomeClient({ user }: HomeClientProps) {
+export default function HomeClient() {
   const t = useTranslations();
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [lastSets, setLastSets] = useState<Record<string, WorkoutSet>>({});
-  const [loaded, setLoaded] = useState(false);
   const [query, setQuery] = useState('');
 
   // Stopwatch
@@ -58,23 +57,32 @@ export default function HomeClient({ user }: HomeClientProps) {
   }
 
   const loadLastSets = useCallback(async () => {
+    // Show cached data from IndexedDB immediately — no network needed
+    const cached = await getLastSetPerExerciseCached();
+    setLastSets(cached);
+
+    // Refresh from Supabase silently in background
     try {
-      const data = await getLastSetPerExercise();
-      setLastSets(data);
+      const fresh = await getLastSetPerExercise();
+      setLastSets(fresh);
     } catch {
-      // silently fail
+      // silently fail — cached data is already shown
     }
-    setLoaded(true);
   }, []);
 
-  // Load on first render
-  if (!loaded) {
-    loadLastSets();
-  }
+  useEffect(() => {
+    // Auth check reads from localStorage — no network, instant
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.replace('/login');
+      } else {
+        setUser(session.user);
+      }
+    });
 
-  function handleSuccess() {
     loadLastSets();
-  }
+  }, [loadLastSets, router]);
 
   const q = query.trim().toLowerCase();
   const grouped = CATEGORY_ORDER.map((cat) => ({
@@ -155,10 +163,10 @@ export default function HomeClient({ user }: HomeClientProps) {
         </button>
       </div>
 
-      {showModal && (
+      {showModal && user && (
         <AddSetModal
           onClose={() => setShowModal(false)}
-          onSuccess={handleSuccess}
+          onSuccess={loadLastSets}
           userId={user.id}
         />
       )}

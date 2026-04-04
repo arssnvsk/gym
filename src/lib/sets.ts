@@ -105,6 +105,27 @@ export async function addSet(input: SetInput, userId: string): Promise<WorkoutSe
   return data;
 }
 
+/** IndexedDB only — no network, instant. Use for stale-while-revalidate. */
+export async function getSetsByExerciseCached(exerciseId: string): Promise<WorkoutSet[]> {
+  const userId = await getCurrentUserId();
+  if (!userId) return [];
+  const cached = await localDb.getSetsByExercise(userId, exerciseId);
+  return cached.sort((a, b) => a.created_at.localeCompare(b.created_at));
+}
+
+/** IndexedDB only — no network, instant. Use for stale-while-revalidate. */
+export async function getLastSetPerExerciseCached(): Promise<Record<string, WorkoutSet>> {
+  const userId = await getCurrentUserId();
+  if (!userId) return {};
+  const allSets = await localDb.getAllSetsByUser(userId);
+  allSets.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const result: Record<string, WorkoutSet> = {};
+  for (const set of allSets) {
+    if (!result[set.exercise_id]) result[set.exercise_id] = set;
+  }
+  return result;
+}
+
 export async function getSetsByExercise(exerciseId: string): Promise<WorkoutSet[]> {
   const supabase = createClient();
 
