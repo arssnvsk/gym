@@ -25,6 +25,7 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
   const [editingSet, setEditingSet] = useState<WorkoutSet | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
 
   const loadSets = useCallback(async () => {
     // Show cached data from IndexedDB immediately — no skeleton needed
@@ -98,8 +99,41 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
     return <span className="text-xs text-[#555]">→</span>;
   }
 
-  // Recent sets (latest 10, reversed)
-  const recentSets = [...sets].reverse().slice(0, 10);
+  // Group sets by day, most recent first, last 10 days
+  const groupedByDay: { date: string; label: string; volume: number; daySets: typeof sets }[] = [];
+  let firstDate: string | null = null;
+  {
+    const today = new Date();
+    const todayStr = today.toISOString().slice(0, 10);
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+    const MONTHS = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+
+    const byDate = new Map<string, typeof sets>();
+    for (const s of [...sets].reverse()) {
+      const d = s.created_at.slice(0, 10);
+      if (!byDate.has(d)) byDate.set(d, []);
+      byDate.get(d)!.push(s);
+    }
+
+    const sortedDates = [...byDate.keys()].sort((a, b) => b.localeCompare(a)).slice(0, 10);
+    for (const d of sortedDates) {
+      const daySets = byDate.get(d)!;
+      const dt = new Date(d + 'T12:00:00');
+      const label = d === todayStr ? 'Сегодня'
+        : d === yesterdayStr ? 'Вчера'
+        : `${dt.getDate()} ${MONTHS[dt.getMonth()]}${dt.getFullYear() !== today.getFullYear() ? ' ' + dt.getFullYear() : ''}`;
+      const allBodyweight = daySets.every(s => s.weight === 0);
+      const volume = daySets.reduce((acc, s) => acc + (allBodyweight ? s.reps : s.weight * s.reps), 0);
+      groupedByDay.push({ date: d, label, volume, daySets });
+      if (firstDate === null) firstDate = d;
+    }
+  }
+
+  // Auto-expand the most recent day on first render
+  if (firstDate !== null && expandedDates.size === 0) {
+    expandedDates.add(firstDate);
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -187,82 +221,98 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
               />
             </div>
 
-            {/* History table */}
+            {/* History grouped by day */}
             <div className="bg-[#141414] border border-[#1F1F1F] rounded-2xl overflow-hidden">
               <div className="px-4 py-3 border-b border-[#1F1F1F]">
                 <h2 className="text-sm font-semibold text-white">{t('exercise.history')}</h2>
               </div>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-xs text-[#555] border-b border-[#1F1F1F]">
-                    <th className="text-left px-4 py-2 font-medium">{t('exercise.historyDate')}</th>
-                    <th className="text-right px-4 py-2 font-medium">{t('exercise.historyWeight')}</th>
-                    <th className="text-right px-4 py-2 font-medium">{t('exercise.historyReps')}</th>
-                    <th className="w-16" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentSets.map((s) => {
-                    const date = new Date(s.created_at);
-                    const label = date.toLocaleDateString('ru-RU', {
-                      day: 'numeric',
-                      month: 'short',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    });
-                    const isConfirming = confirmDeleteId === s.id;
-                    return (
-                      <tr key={s.id} className={`border-b border-[#1A1A1A] last:border-0 transition-colors ${isConfirming ? 'bg-red-950/30' : 'hover:bg-[#1A1A1A]'}`}>
-                        <td className="px-4 py-3 text-[#888] text-xs">{label}</td>
-                        <td className="px-4 py-3 text-right">
-                          <span className="text-white font-semibold">{s.weight}</span>
-                          <span className="text-[#555] text-xs ml-1">{t('home.kg')}</span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <span className="text-white font-semibold">{s.reps}</span>
-                          <span className="text-[#555] text-xs ml-1">{t('home.lastReps')}</span>
-                        </td>
-                        <td className="px-3 py-2">
-                          {isConfirming ? (
-                            <div className="flex items-center gap-1 justify-end">
-                              <button
-                                onClick={() => handleDelete(s.id)}
-                                disabled={deleting}
-                                className="text-xs text-red-400 font-semibold hover:text-red-300 disabled:opacity-50 px-1"
-                              >
-                                {deleting ? '…' : t('exercise.confirmDelete')}
-                              </button>
-                              <button
-                                onClick={() => setConfirmDeleteId(null)}
-                                className="text-xs text-[#555] hover:text-white px-1"
-                              >
-                                {t('exercise.cancelDelete')}
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1 justify-end">
-                              <button
-                                onClick={() => setEditingSet(s)}
-                                className="w-7 h-7 flex items-center justify-center text-[#555] hover:text-white hover:bg-[#1F1F1F] rounded-lg transition-colors text-sm"
-                                title={t('exercise.editSet')}
-                              >
-                                ✎
-                              </button>
-                              <button
-                                onClick={() => setConfirmDeleteId(s.id)}
-                                className="w-7 h-7 flex items-center justify-center text-[#555] hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-colors text-sm"
-                                title={t('exercise.deleteSet')}
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              {groupedByDay.map(({ date, label, volume, daySets }) => {
+                const allBodyweight = daySets.every(s => s.weight === 0);
+                const isOpen = expandedDates.has(date);
+                function toggleDate() {
+                  setExpandedDates(prev => {
+                    const next = new Set(prev);
+                    if (next.has(date)) next.delete(date); else next.add(date);
+                    return next;
+                  });
+                }
+                return (
+                  <div key={date}>
+                    {/* Day header — accordion trigger */}
+                    <button
+                      onClick={toggleDate}
+                      className="w-full flex items-center justify-between px-4 py-3 bg-[#0F0F0F] border-b border-[#1F1F1F] active:bg-white/5 transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs transition-transform duration-200 ${isOpen ? 'rotate-90' : ''} text-[#444]`}>▶</span>
+                        <span className="text-xs font-semibold text-[#888] uppercase tracking-wider">{label}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-[#555] tabular-nums">
+                          {allBodyweight ? `${volume} повт.` : `${volume.toLocaleString('ru-RU')} кг`}
+                        </span>
+                        <span className="text-[11px] text-[#444]">{daySets.length} × </span>
+                      </div>
+                    </button>
+                    {/* Sets — only when expanded */}
+                    {isOpen && daySets.map((s, i) => {
+                      const isConfirming = confirmDeleteId === s.id;
+                      return (
+                        <div
+                          key={s.id}
+                          className={`flex items-center justify-between px-4 py-3 transition-colors ${
+                            i < daySets.length - 1 ? 'border-b border-[#1A1A1A]' : ''
+                          } ${isConfirming ? 'bg-red-950/20' : 'hover:bg-[#1A1A1A]'}`}
+                        >
+                          <div className="flex items-center gap-1.5 text-sm">
+                            {s.weight > 0 ? (
+                              <>
+                                <span className="text-white font-semibold">{s.weight}</span>
+                                <span className="text-[#555] text-xs">{t('home.kg')}</span>
+                                <span className="text-[#333] mx-0.5">×</span>
+                              </>
+                            ) : null}
+                            <span className="text-white font-semibold">{s.reps}</span>
+                            <span className="text-[#555] text-xs">{t('home.lastReps')}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {isConfirming ? (
+                              <>
+                                <button
+                                  onClick={() => handleDelete(s.id)}
+                                  disabled={deleting}
+                                  className="text-xs text-red-400 font-semibold hover:text-red-300 disabled:opacity-50 px-2 py-1"
+                                >
+                                  {deleting ? '…' : t('exercise.confirmDelete')}
+                                </button>
+                                <button
+                                  onClick={() => setConfirmDeleteId(null)}
+                                  className="text-xs text-[#555] hover:text-white px-2 py-1"
+                                >
+                                  {t('exercise.cancelDelete')}
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  onClick={() => setEditingSet(s)}
+                                  className="w-7 h-7 flex items-center justify-center text-[#555] hover:text-white hover:bg-[#1F1F1F] rounded-lg transition-colors text-sm"
+                                  title={t('exercise.editSet')}
+                                >✎</button>
+                                <button
+                                  onClick={() => setConfirmDeleteId(s.id)}
+                                  className="w-7 h-7 flex items-center justify-center text-[#555] hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-colors text-sm"
+                                  title={t('exercise.deleteSet')}
+                                >✕</button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
             </div>
           </>)}
           </>
