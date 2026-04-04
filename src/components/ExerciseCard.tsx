@@ -17,22 +17,22 @@ export default function ExerciseCard({ exercise, lastSet, layout = 'list' }: Exe
     return (
       <Link
         href={`/exercise/${exercise.id}`}
-        className="block bg-[#141414] border border-[#1F1F1F] rounded-2xl p-4 hover:border-[#FF5722]/50 hover:bg-[#1A1A1A] transition-all active:scale-95"
+        className="block bg-[#141414] border border-[#1F1F1F] rounded-xl p-2.5 hover:border-[#FF5722]/50 hover:bg-[#1A1A1A] transition-all active:scale-95"
       >
-        <span className="text-2xl block mb-3">{exercise.icon}</span>
-        <h3 className="text-sm font-semibold text-white leading-tight mb-2">
+        <span className="text-lg block mb-1.5">{exercise.icon}</span>
+        <h3 className="text-xs font-semibold text-white leading-tight mb-1">
           {t(exercise.nameKey)}
         </h3>
         {lastSet ? (
-          <div className="flex items-center gap-1.5 text-xs text-[#888]">
+          <div className="flex items-center gap-1 text-[11px] text-[#555]">
             {lastSet.weight > 0 && (
-              <><span className="text-[#FF5722] font-bold text-sm">{lastSet.weight}</span><span>{t('home.kg')}</span><span className="text-[#555]">·</span></>
+              <><span className="text-[#FF5722] font-semibold">{lastSet.weight}</span><span>{t('home.kg')}</span><span>·</span></>
             )}
             <span>{lastSet.reps}</span>
             <span>{t('home.lastReps')}</span>
           </div>
         ) : (
-          <span className="text-xs text-[#444]">{t('home.noData')}</span>
+          <span className="text-[11px] text-[#333]">{t('home.noData')}</span>
         )}
       </Link>
     );

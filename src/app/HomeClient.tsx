@@ -42,7 +42,7 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
   const [query, setQuery] = useState('');
   const [streak, setStreak] = useState(initialStreak);
   const [streakInfoOpen, setStreakInfoOpen] = useState(false);
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(CATEGORY_ORDER));
   const [layout] = useState(initialPreferences.exerciseLayout);
 
   // Pick one exercise per ready/fresh muscle group, prefer those with history
