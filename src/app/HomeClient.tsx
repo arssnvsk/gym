@@ -12,6 +12,7 @@ import StopwatchModal from '@/components/StopwatchModal';
 import { EXERCISES, CATEGORY_ORDER } from '@/lib/exercises';
 import { getLastSetPerExercise, getLastSetPerExerciseCached } from '@/lib/sets';
 import { getStreakCached } from '@/lib/day';
+import { type UserPreferences } from '@/lib/preferences';
 import type { WorkoutSet } from '@/types';
 
 function pluralWorkouts(n: number): string {
@@ -26,7 +27,7 @@ function formatTimeShort(ms: number) {
   return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}с`;
 }
 
-export default function HomeClient() {
+export default function HomeClient({ initialPreferences }: { initialPreferences: UserPreferences }) {
   const t = useTranslations();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -35,6 +36,8 @@ export default function HomeClient() {
   const [query, setQuery] = useState('');
   const [streak, setStreak] = useState(0);
   const [streakInfoOpen, setStreakInfoOpen] = useState(false);
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
+  const [layout] = useState(initialPreferences.exerciseLayout);
 
   // Stopwatch
   const [showStopwatch, setShowStopwatch] = useState(false);
@@ -158,22 +161,44 @@ export default function HomeClient() {
           )}
         </div>
 
-        {grouped.map(({ category, exercises }) => (
-          <section key={category} className="mb-6">
-            <h2 className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-3">
-              {t(`categories.${category}`)}
-            </h2>
-            <div className="grid grid-cols-2 gap-3">
-              {exercises.map((ex) => (
-                <ExerciseCard
-                  key={ex.id}
-                  exercise={ex}
-                  lastSet={lastSets[ex.id]}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
+        {grouped.map(({ category, exercises }) => {
+          const isCollapsed = collapsedCategories.has(category);
+          const trainedCount = exercises.filter(ex => lastSets[ex.id]).length;
+          return (
+            <section key={category} className="mb-2">
+              <button
+                onClick={() => setCollapsedCategories(prev => {
+                  const next = new Set(prev);
+                  if (next.has(category)) next.delete(category); else next.add(category);
+                  return next;
+                })}
+                className="w-full flex items-center justify-between py-2 mb-1 active:opacity-70 transition-opacity"
+              >
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] transition-transform duration-200 text-[#444] ${isCollapsed ? '' : 'rotate-90'}`}>▶</span>
+                  <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">
+                    {t(`categories.${category}`)}
+                  </span>
+                </div>
+                <span className="text-xs text-[#333]">
+                  {trainedCount}/{exercises.length}
+                </span>
+              </button>
+              {!isCollapsed && (
+                <div className={`grid gap-1.5 mb-4 ${layout === 'grid' ? 'grid-cols-2 gap-3' : 'grid-cols-1'}`}>
+                  {exercises.map((ex) => (
+                    <ExerciseCard
+                      key={ex.id}
+                      exercise={ex}
+                      lastSet={lastSets[ex.id]}
+                      layout={layout}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          );
+        })}
       </main>
 
       {/* FAB */}

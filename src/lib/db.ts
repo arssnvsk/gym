@@ -1,7 +1,7 @@
 import type { WorkoutSet } from '@/types';
 
 const DB_NAME = 'gymdb';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export interface SyncQueueItem {
   key?: number;
@@ -21,15 +21,22 @@ function openDB(): Promise<IDBDatabase> {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onerror = () => reject(req.error);
     req.onsuccess = () => resolve(req.result);
+    req.onblocked = () => {
+      // Another tab is holding v1 open — ask it to close
+      console.warn('[db] upgrade blocked by another tab');
+    };
     req.onupgradeneeded = (e) => {
       const db = (e.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains('sets')) {
+      const oldVersion = e.oldVersion;
+
+      if (oldVersion < 1) {
         const store = db.createObjectStore('sets', { keyPath: 'id' });
         store.createIndex('by_exercise', ['user_id', 'exercise_id']);
         store.createIndex('by_user', 'user_id');
-      }
-      if (!db.objectStoreNames.contains('sync_queue')) {
         db.createObjectStore('sync_queue', { keyPath: 'key', autoIncrement: true });
+      }
+      if (oldVersion < 2) {
+        db.createObjectStore('preferences');
       }
     };
   });
@@ -97,6 +104,36 @@ export async function removeSet(id: string): Promise<void> {
     tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(new Error('Transaction aborted'));
   });
+}
+
+export async function getPreferencesLocal(): Promise<unknown> {
+  if (!isAvailable()) return null;
+  try {
+    const db = await openDB();
+    return await new Promise((resolve, reject) => {
+      const tx = db.transaction('preferences', 'readonly');
+      const req = tx.objectStore('preferences').get('prefs');
+      req.onsuccess = () => resolve(req.result ?? null);
+      req.onerror = () => reject(req.error);
+    });
+  } catch {
+    return null;
+  }
+}
+
+export async function savePreferencesLocal(value: unknown): Promise<void> {
+  if (!isAvailable()) return;
+  try {
+    const db = await openDB();
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction('preferences', 'readwrite');
+      tx.objectStore('preferences').put(value, 'prefs');
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch {
+    // preferences store not yet available — will work after page reload
+  }
 }
 
 export async function pushToQueue(item: Omit<SyncQueueItem, 'key'>): Promise<void> {

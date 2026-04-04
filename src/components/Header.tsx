@@ -85,6 +85,14 @@ export default function Header({ user }: HeaderProps) {
                 <span className="text-lg leading-none">💡</span>
                 <span className="font-medium">Советы</span>
               </button>
+              <div className="h-px bg-[#2A2A2A]" />
+              <button
+                onClick={() => navigate('/settings')}
+                className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-white hover:bg-white/5 active:bg-white/10 transition-colors"
+              >
+                <span className="text-lg leading-none">⚙️</span>
+                <span className="font-medium">Настройки</span>
+              </button>
               {user && (
                 <>
                   <div className="h-px bg-[#2A2A2A]" />
