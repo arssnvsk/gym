@@ -27,3 +27,11 @@ select option {
   background-color: #141414;
   color: #fff;
 }
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

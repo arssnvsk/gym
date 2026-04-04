@@ -130,6 +130,21 @@ function computeDayStats(allSets: WorkoutSet[], date: string): DayStats | null {
   };
 }
 
+/** Returns unique workout dates sorted newest-first, from IndexedDB only. */
+export async function getWorkoutDatesCached(): Promise<string[]> {
+  try {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user?.id) return [];
+
+    const allSets = await localDb.getAllSetsByUser(session.user.id);
+    const dates = new Set(allSets.map(s => s.created_at.slice(0, 10)));
+    return Array.from(dates).sort((a, b) => b.localeCompare(a));
+  } catch {
+    return [];
+  }
+}
+
 /** IndexedDB only — no network, instant. Use for stale-while-revalidate. */
 export async function getDayStatsCached(date: string): Promise<DayStats | null> {
   try {
