@@ -104,12 +104,13 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-[#1F1F1F]">
+      <header className="sticky top-0 z-10 flex items-center gap-3 px-4 py-1 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-[#1F1F1F]">
         <Link
           href="/"
-          className="text-[#888] hover:text-white transition-colors text-sm flex items-center gap-1"
+          className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[#888] hover:text-white active:bg-white/5 transition-colors text-sm font-medium"
         >
-          ← {t('exercise.backToHome')}
+          <span className="text-lg leading-none">‹</span>
+          <span>{t('exercise.backToHome')}</span>
         </Link>
       </header>
 

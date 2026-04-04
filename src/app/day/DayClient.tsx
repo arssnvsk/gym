@@ -180,11 +180,15 @@ export default function DayClient() {
     <div className="flex flex-col min-h-screen">
       {/* Header */}
       <div className="sticky top-0 bg-[#0A0A0A] z-10 border-b border-[#1A1A1A]">
-        <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-          <Link href="/" className="text-[#888] hover:text-white transition-colors text-2xl leading-none">
-            ←
+        <div className="flex items-center gap-2 px-4 pt-2 pb-2">
+          <Link
+            href="/"
+            className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[#888] hover:text-white active:bg-white/5 transition-colors text-sm font-medium shrink-0"
+          >
+            <span className="text-lg leading-none">‹</span>
+            <span>Назад</span>
           </Link>
-          <span className="text-white font-semibold">
+          <span className="text-white font-semibold truncate">
             {formatHeaderDate(selectedDate, today)}
           </span>
         </div>
