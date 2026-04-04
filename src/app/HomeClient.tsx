@@ -161,6 +161,14 @@ export default function HomeClient() {
           <span className="text-xl">+</span>
           {t('home.addSet')}
         </button>
+
+        {/* Day stats button */}
+        <button
+          onClick={() => router.push('/day')}
+          className="flex items-center justify-center rounded-2xl transition-all active:scale-95 border bg-[#141414] border-[#1F1F1F] text-[#888] hover:text-white hover:border-[#333] w-14"
+        >
+          <span className="text-xl leading-none">📊</span>
+        </button>
       </div>
 
       {showModal && user && (

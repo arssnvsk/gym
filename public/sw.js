@@ -28,7 +28,9 @@ self.addEventListener('fetch', (e) => {
   if (url.origin !== self.location.origin) return;
 
   // _next/static — immutable hashed files, cache-first forever
+  // On localhost (dev mode) filenames are not hashed, so skip cache to get fresh JS
   if (url.pathname.startsWith('/_next/static/')) {
+    if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return;
     e.respondWith(
       caches.match(request).then((cached) => {
         if (cached) return cached;
