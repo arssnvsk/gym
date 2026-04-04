@@ -11,7 +11,14 @@ import AddSetModal from '@/components/AddSetModal';
 import StopwatchModal from '@/components/StopwatchModal';
 import { EXERCISES, CATEGORY_ORDER } from '@/lib/exercises';
 import { getLastSetPerExercise, getLastSetPerExerciseCached } from '@/lib/sets';
+import { getStreakCached } from '@/lib/day';
 import type { WorkoutSet } from '@/types';
+
+function pluralWorkouts(n: number): string {
+  if (n % 10 === 1 && n % 100 !== 11) return 'тренировка';
+  if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return 'тренировки';
+  return 'тренировок';
+}
 
 function formatTimeShort(ms: number) {
   const m = Math.floor(ms / 60000);
@@ -26,6 +33,8 @@ export default function HomeClient() {
   const [showModal, setShowModal] = useState(false);
   const [lastSets, setLastSets] = useState<Record<string, WorkoutSet>>({});
   const [query, setQuery] = useState('');
+  const [streak, setStreak] = useState(0);
+  const [streakInfoOpen, setStreakInfoOpen] = useState(false);
 
   // Stopwatch
   const [showStopwatch, setShowStopwatch] = useState(false);
@@ -60,11 +69,13 @@ export default function HomeClient() {
     // Show cached data from IndexedDB immediately — no network needed
     const cached = await getLastSetPerExerciseCached();
     setLastSets(cached);
+    getStreakCached().then(setStreak);
 
     // Refresh from Supabase silently in background
     try {
       const fresh = await getLastSetPerExercise();
       setLastSets(fresh);
+      getStreakCached().then(setStreak);
     } catch {
       // silently fail — cached data is already shown
     }
@@ -97,6 +108,36 @@ export default function HomeClient() {
       <Header user={user} />
 
       <main className="flex-1 px-4 pb-28 pt-4">
+        {/* Streak */}
+        {streak > 0 && (
+          <div className="bg-[#141414] border border-[#1F1F1F] rounded-2xl p-4 mb-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl leading-none">🔥</span>
+                <div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-2xl font-bold text-white">{streak}</span>
+                    <span className="text-sm text-[#888]">{pluralWorkouts(streak)} подряд</span>
+                  </div>
+                  <p className="text-xs text-[#555] mt-0.5">Серия тренировок</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setStreakInfoOpen(v => !v)}
+                className="w-7 h-7 flex items-center justify-center text-[#444] hover:text-[#888] transition-colors text-base rounded-lg hover:bg-white/5"
+                aria-label="Как считается серия"
+              >
+                ⓘ
+              </button>
+            </div>
+            {streakInfoOpen && (
+              <p className="mt-3 pt-3 border-t border-[#1F1F1F] text-xs text-[#666] leading-relaxed">
+                Серия не сбрасывается, если между тренировками не более 2 дней отдыха — как обычно бывает при тренировках через день. Пропустил 3 и более дней — серия обнуляется.
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Search */}
         <div className="relative mb-5">
           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#444] text-sm pointer-events-none">🔍</span>

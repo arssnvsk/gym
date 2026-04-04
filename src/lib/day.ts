@@ -130,6 +130,43 @@ function computeDayStats(allSets: WorkoutSet[], date: string): DayStats | null {
   };
 }
 
+/** Returns the current training streak: number of consecutive training sessions
+ *  where the gap between any two adjacent sessions is ≤ 3 calendar days (i.e. max 2 rest days).
+ *  The streak is also considered alive if the last training was ≤ 2 days ago. */
+export function computeStreak(sortedDatesNewestFirst: string[]): number {
+  if (sortedDatesNewestFirst.length === 0) return 0;
+
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const latest = sortedDatesNewestFirst[0];
+
+  const daysSinceLast = Math.round(
+    (new Date(todayStr + 'T12:00:00').getTime() - new Date(latest + 'T12:00:00').getTime())
+    / 86_400_000,
+  );
+
+  // If last training was 3+ days ago — streak is broken
+  if (daysSinceLast > 2) return 0;
+
+  // Count consecutive sessions, allowing up to 2 rest days between each pair
+  let streak = 1;
+  for (let i = 0; i < sortedDatesNewestFirst.length - 1; i++) {
+    const gap = Math.round(
+      (new Date(sortedDatesNewestFirst[i] + 'T12:00:00').getTime() -
+        new Date(sortedDatesNewestFirst[i + 1] + 'T12:00:00').getTime())
+      / 86_400_000,
+    );
+    if (gap <= 3) streak++;
+    else break;
+  }
+  return streak;
+}
+
+export async function getStreakCached(): Promise<number> {
+  const dates = await getWorkoutDatesCached();
+  return computeStreak(dates);
+}
+
 /** Returns unique workout dates sorted newest-first, from IndexedDB only. */
 export async function getWorkoutDatesCached(): Promise<string[]> {
   try {
