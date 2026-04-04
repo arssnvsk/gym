@@ -1,10 +1,13 @@
-import { redirect, notFound } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
-import { getExerciseById } from '@/lib/exercises';
+import { notFound } from 'next/navigation';
+import { getExerciseById, EXERCISES } from '@/lib/exercises';
 import ExerciseClient from './ExerciseClient';
 
 interface Props {
   params: Promise<{ id: string }>;
+}
+
+export function generateStaticParams() {
+  return EXERCISES.map((e) => ({ id: e.id }));
 }
 
 export default async function ExercisePage({ params }: Props) {
@@ -13,9 +16,5 @@ export default async function ExercisePage({ params }: Props) {
   const exercise = getExerciseById(id);
   if (!exercise) notFound();
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
-
-  return <ExerciseClient exercise={exercise} userId={user.id} />;
+  return <ExerciseClient exercise={exercise} />;
 }

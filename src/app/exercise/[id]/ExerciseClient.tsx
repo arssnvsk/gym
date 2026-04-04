@@ -1,21 +1,24 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { Exercise, WorkoutSet } from '@/types';
 import { getSetsByExercise, toVolumeChartData, getPersonalRecord, deleteSet } from '@/lib/sets';
+import { createClient } from '@/lib/supabase/client';
 import ProgressChart from '@/components/ProgressChart';
 import AddSetModal from '@/components/AddSetModal';
 import MuscleMap from '@/components/MuscleMap';
 
 interface ExerciseClientProps {
   exercise: Exercise;
-  userId: string;
 }
 
-export default function ExerciseClient({ exercise, userId }: ExerciseClientProps) {
+export default function ExerciseClient({ exercise }: ExerciseClientProps) {
   const t = useTranslations();
+  const router = useRouter();
+  const [userId, setUserId] = useState<string | null>(null);
   const [sets, setSets] = useState<WorkoutSet[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -34,8 +37,19 @@ export default function ExerciseClient({ exercise, userId }: ExerciseClientProps
   }, [exercise.id]);
 
   useEffect(() => {
+    // Auth check reads from localStorage — instant, no network needed
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.replace('/login');
+      } else {
+        setUserId(session.user.id);
+      }
+    });
+
+    // Load sets in parallel — doesn't need userId (Supabase RLS + IndexedDB handle it)
     loadSets();
-  }, [loadSets]);
+  }, [loadSets, router]);
 
   async function handleDelete(id: string) {
     setDeleting(true);
@@ -248,17 +262,19 @@ export default function ExerciseClient({ exercise, userId }: ExerciseClientProps
       </main>
 
       {/* FAB */}
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4">
-        <button
-          onClick={() => setShowModal(true)}
-          className="w-full flex items-center justify-center gap-2 bg-[#FF5722] hover:bg-[#FF6D3A] text-white font-semibold py-4 rounded-2xl shadow-lg shadow-[#FF5722]/30 transition-all active:scale-95 text-base"
-        >
-          <span className="text-xl">+</span>
-          {t('home.addSet')}
-        </button>
-      </div>
+      {userId && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-[480px] px-4">
+          <button
+            onClick={() => setShowModal(true)}
+            className="w-full flex items-center justify-center gap-2 bg-[#FF5722] hover:bg-[#FF6D3A] text-white font-semibold py-4 rounded-2xl shadow-lg shadow-[#FF5722]/30 transition-all active:scale-95 text-base"
+          >
+            <span className="text-xl">+</span>
+            {t('home.addSet')}
+          </button>
+        </div>
+      )}
 
-      {showModal && (
+      {showModal && userId && (
         <AddSetModal
           onClose={() => setShowModal(false)}
           onSuccess={loadSets}
@@ -267,7 +283,7 @@ export default function ExerciseClient({ exercise, userId }: ExerciseClientProps
         />
       )}
 
-      {editingSet && (
+      {editingSet && userId && (
         <AddSetModal
           onClose={() => setEditingSet(null)}
           onSuccess={loadSets}
