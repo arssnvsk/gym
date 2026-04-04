@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { User } from '@supabase/supabase-js';
@@ -13,6 +13,7 @@ import { EXERCISES, CATEGORY_ORDER } from '@/lib/exercises';
 import { getLastSetPerExercise, getLastSetPerExerciseCached } from '@/lib/sets';
 import { getStreakCached } from '@/lib/day';
 import { type UserPreferences } from '@/lib/preferences';
+import { type ReadinessInfo } from '@/lib/insights';
 import type { WorkoutSet } from '@/types';
 
 function pluralWorkouts(n: number): string {
@@ -27,7 +28,12 @@ function formatTimeShort(ms: number) {
   return m > 0 ? `${m}:${String(s).padStart(2, '0')}` : `${s}с`;
 }
 
-export default function HomeClient({ initialPreferences, initialStreak }: { initialPreferences: UserPreferences; initialStreak: number }) {
+
+export default function HomeClient({ initialPreferences, initialStreak, initialReadiness }: {
+  initialPreferences: UserPreferences;
+  initialStreak: number;
+  initialReadiness: ReadinessInfo | null;
+}) {
   const t = useTranslations();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -38,6 +44,22 @@ export default function HomeClient({ initialPreferences, initialStreak }: { init
   const [streakInfoOpen, setStreakInfoOpen] = useState(false);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
   const [layout] = useState(initialPreferences.exerciseLayout);
+
+  // Pick one exercise per ready/fresh muscle group, prefer those with history
+  const suggestedExercises = useMemo(() => {
+    if (!initialReadiness) return [];
+    const muscles = [...initialReadiness.fresh, ...initialReadiness.ready].slice(0, 6);
+    const seen = new Set<string>();
+    const result = [];
+    for (const muscle of muscles) {
+      const withHistory = EXERCISES.filter(ex => ex.muscles.primary.includes(muscle) && lastSets[ex.id]);
+      const withoutHistory = EXERCISES.filter(ex => ex.muscles.primary.includes(muscle) && !lastSets[ex.id]);
+      const pick = [...withHistory, ...withoutHistory].find(ex => !seen.has(ex.id));
+      if (pick) { seen.add(pick.id); result.push(pick); }
+      if (result.length >= 5) break;
+    }
+    return result;
+  }, [initialReadiness, lastSets]);
 
   // Stopwatch
   const [showStopwatch, setShowStopwatch] = useState(false);
@@ -160,6 +182,20 @@ export default function HomeClient({ initialPreferences, initialStreak }: { init
             </button>
           )}
         </div>
+
+        {/* На сегодня */}
+        {suggestedExercises.length > 0 && (
+          <section className="mb-2">
+            <div className="flex items-center justify-between py-2 mb-1">
+              <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">На сегодня</span>
+            </div>
+            <div className={`grid gap-1.5 mb-4 ${layout === 'grid' ? 'grid-cols-2 gap-3' : 'grid-cols-1'}`}>
+              {suggestedExercises.map(ex => (
+                <ExerciseCard key={ex.id} exercise={ex} lastSet={lastSets[ex.id]} layout={layout} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {grouped.map(({ category, exercises }) => {
           const isCollapsed = collapsedCategories.has(category);

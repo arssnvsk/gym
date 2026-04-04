@@ -67,6 +67,43 @@ function mName(m: MuscleGroup): string {
   return MUSCLE_NAMES[m] ?? m;
 }
 
+// ── readiness (also used on home page) ────────────────────────────────────
+
+export interface ReadinessInfo {
+  ready: MuscleGroup[];      // recovered ≥ 48 h ago — good to train
+  recovering: MuscleGroup[]; // trained < 48 h ago — still healing
+  fresh: MuscleGroup[];      // never trained
+}
+
+export function computeReadiness(allSets: WorkoutSet[]): ReadinessInfo {
+  const today = getTodayStr();
+  const sorted = [...allSets].sort((a, b) => a.created_at.localeCompare(b.created_at));
+
+  const muscleLastTrained = new Map<MuscleGroup, string>();
+  for (const s of sorted) {
+    const d = s.created_at.slice(0, 10);
+    const ex = EXERCISES.find(e => e.id === s.exercise_id);
+    if (!ex) continue;
+    for (const m of ex.muscles.primary) {
+      if (!muscleLastTrained.has(m) || d > muscleLastTrained.get(m)!) {
+        muscleLastTrained.set(m, d);
+      }
+    }
+  }
+
+  const ready: MuscleGroup[] = [];
+  const recovering: MuscleGroup[] = [];
+  const fresh: MuscleGroup[] = MAJOR_MUSCLES.filter(m => !muscleLastTrained.has(m));
+
+  for (const [muscle, last] of muscleLastTrained) {
+    if (!MAJOR_MUSCLES.includes(muscle)) continue;
+    if (daysBetween(last, today) >= 2) ready.push(muscle);
+    else recovering.push(muscle);
+  }
+
+  return { ready, recovering, fresh };
+}
+
 // ── main function ──────────────────────────────────────────────────────────
 
 export function computeInsights(allSets: WorkoutSet[]): Insight[] {
