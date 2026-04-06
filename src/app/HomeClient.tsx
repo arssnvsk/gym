@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
@@ -11,7 +12,7 @@ import AddSetModal from '@/components/AddSetModal';
 import StopwatchModal from '@/components/StopwatchModal';
 import { EXERCISES, CATEGORY_ORDER } from '@/lib/exercises';
 import { getLastSetPerExercise, getLastSetPerExerciseCached } from '@/lib/sets';
-import { getStreakCached } from '@/lib/day';
+import { getStreakCached, getDayStatsCached, type DayStats, type ExerciseTrend } from '@/lib/day';
 import { type UserPreferences } from '@/lib/preferences';
 import { type ReadinessInfo } from '@/lib/insights';
 import type { WorkoutSet } from '@/types';
@@ -20,6 +21,51 @@ function pluralWorkouts(n: number): string {
   if (n % 10 === 1 && n % 100 !== 11) return 'тренировка';
   if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return 'тренировки';
   return 'тренировок';
+}
+
+function pluralSets(n: number): string {
+  if (n % 10 === 1 && n % 100 !== 11) return 'подход';
+  if (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) return 'подхода';
+  return 'подходов';
+}
+
+function formatVolumeSm(volume: number, isBodyweight: boolean): string {
+  if (isBodyweight) return `${volume}\u00a0раз`;
+  if (volume >= 1000) return `${(volume / 1000).toFixed(1)}\u00a0т`;
+  return `${Math.round(volume)}\u00a0кг`;
+}
+
+function getTodayDate(): string {
+  const now = new Date();
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
+const TREND_COLORS: Record<Exclude<ExerciseTrend, 'new'>, string> = {
+  progress: 'text-green-400', regression: 'text-red-400', neutral: 'text-[#555]',
+};
+const TREND_ICONS: Record<Exclude<ExerciseTrend, 'new'>, string> = {
+  progress: '↑', regression: '↓', neutral: '→',
+};
+
+function TodayTrendBadge({ trend, changePercent }: { trend: ExerciseTrend; changePercent: number | null }) {
+  if (trend === 'new') {
+    return (
+      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#FF5722]/15 text-[#FF5722] border border-[#FF5722]/25 leading-none">
+        ★
+      </span>
+    );
+  }
+  const sign = changePercent !== null && changePercent > 0 ? '+' : '';
+  const pct = changePercent !== null ? `\u00a0${sign}${changePercent}%` : '';
+  return (
+    <span className={`text-xs font-semibold tabular-nums ${TREND_COLORS[trend]}`}>
+      {TREND_ICONS[trend]}{pct}
+    </span>
+  );
 }
 
 function formatTimeShort(ms: number) {
@@ -42,6 +88,7 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
   const [query, setQuery] = useState('');
   const [streak, setStreak] = useState(initialStreak);
   const [streakInfoOpen, setStreakInfoOpen] = useState(false);
+  const [todayStats, setTodayStats] = useState<DayStats | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(CATEGORY_ORDER));
   const [layout] = useState(initialPreferences.exerciseLayout);
 
@@ -91,16 +138,20 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
   }
 
   const loadLastSets = useCallback(async () => {
+    const today = getTodayDate();
+
     // Show cached data from IndexedDB immediately — no network needed
     const cached = await getLastSetPerExerciseCached();
     setLastSets(cached);
     getStreakCached().then(setStreak);
+    getDayStatsCached(today).then(setTodayStats);
 
     // Refresh from Supabase silently in background
     try {
-      const fresh = await getLastSetPerExercise();
+      const fresh = await getLastSetPerExercise(); // also upserts to IndexedDB
       setLastSets(fresh);
       getStreakCached().then(setStreak);
+      getDayStatsCached(today).then(setTodayStats); // re-read after IndexedDB is fresh
     } catch {
       // silently fail — cached data is already shown
     }
@@ -182,6 +233,43 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
             </button>
           )}
         </div>
+
+        {/* Прогресс сегодня */}
+        {todayStats && !q && (
+          <section className="mb-5">
+            <div className="flex items-center justify-between py-2 mb-1">
+              <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">Прогресс сегодня</span>
+              <Link href="/day" className="text-xs text-[#FF5722] hover:text-[#FF6D3A] transition-colors">
+                Подробнее →
+              </Link>
+            </div>
+            <div className="bg-[#141414] border border-[#1F1F1F] rounded-2xl overflow-hidden">
+              {todayStats.exerciseStats.map((stat, i) => (
+                <Link
+                  key={stat.exercise.id}
+                  href={`/exercise/${stat.exercise.id}`}
+                  className={`flex items-center justify-between px-3 py-2.5 gap-3 hover:bg-[#1A1A1A] active:opacity-70 transition-all ${
+                    i > 0 ? 'border-t border-[#1A1A1A]' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-lg leading-none shrink-0">{stat.exercise.icon}</span>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-white truncate">{t(stat.exercise.nameKey)}</div>
+                      <div className="text-[11px] text-[#555]">{stat.todaySets} {pluralSets(stat.todaySets)}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-[#555] tabular-nums">
+                      {formatVolumeSm(stat.todayVolume, stat.isBodyweight)}
+                    </span>
+                    <TodayTrendBadge trend={stat.trend} changePercent={stat.changePercent} />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* На сегодня */}
         {suggestedExercises.length > 0 && (
