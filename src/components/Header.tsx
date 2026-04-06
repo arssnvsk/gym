@@ -54,14 +54,16 @@ export default function Header({ user }: HeaderProps) {
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
 
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-[#1F1F1F]">
+    <header className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
       <div className="flex items-center gap-2">
         {/* Burger menu */}
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(v => !v)}
             className={`flex items-center justify-center w-9 h-9 rounded-xl transition-colors ${
-              menuOpen ? 'bg-white/10 text-white' : 'text-[#888] hover:text-white hover:bg-white/5'
+              menuOpen
+                ? 'bg-[var(--t-overlay-md)] text-[var(--t-text)]'
+                : 'text-[var(--t-muted)] hover:text-[var(--t-text)] hover:bg-[var(--t-overlay)]'
             }`}
             aria-label="Меню"
           >
@@ -69,36 +71,36 @@ export default function Header({ user }: HeaderProps) {
           </button>
 
           {menuOpen && (
-            <div className="absolute top-full left-0 mt-2 w-52 bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl shadow-xl overflow-hidden z-50">
+            <div className="absolute top-full left-0 mt-2 w-52 bg-[var(--t-hover)] border border-[var(--t-border2)] rounded-2xl shadow-xl overflow-hidden z-50">
               <button
                 onClick={() => navigate('/day')}
-                className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-white hover:bg-white/5 active:bg-white/10 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-[var(--t-text)] hover:bg-[var(--t-overlay)] active:bg-[var(--t-overlay-md)] transition-colors"
               >
                 <span className="text-lg leading-none">📊</span>
                 <span className="font-medium">Отчёт</span>
               </button>
-              <div className="h-px bg-[#2A2A2A]" />
+              <div className="h-px bg-[var(--t-border2)]" />
               <button
                 onClick={() => navigate('/insights')}
-                className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-white hover:bg-white/5 active:bg-white/10 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-[var(--t-text)] hover:bg-[var(--t-overlay)] active:bg-[var(--t-overlay-md)] transition-colors"
               >
                 <span className="text-lg leading-none">💡</span>
                 <span className="font-medium">Советы</span>
               </button>
-              <div className="h-px bg-[#2A2A2A]" />
+              <div className="h-px bg-[var(--t-border2)]" />
               <button
                 onClick={() => navigate('/settings')}
-                className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-white hover:bg-white/5 active:bg-white/10 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-[var(--t-text)] hover:bg-[var(--t-overlay)] active:bg-[var(--t-overlay-md)] transition-colors"
               >
                 <span className="text-lg leading-none">⚙️</span>
                 <span className="font-medium">Настройки</span>
               </button>
               {user && (
                 <>
-                  <div className="h-px bg-[#2A2A2A]" />
+                  <div className="h-px bg-[var(--t-border2)]" />
                   <button
                     onClick={() => { setMenuOpen(false); handleSignOut(); }}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-[#888] hover:text-white hover:bg-white/5 active:bg-white/10 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-[var(--t-muted)] hover:text-[var(--t-text)] hover:bg-[var(--t-overlay)] active:bg-[var(--t-overlay-md)] transition-colors"
                   >
                     <span className="text-lg leading-none">🚪</span>
                     <span>{t('auth.signOut')}</span>
@@ -111,7 +113,7 @@ export default function Header({ user }: HeaderProps) {
 
       </div>
 
-      <h1 className="text-lg font-bold text-white">{t('app.title')}</h1>
+      <h1 className="text-lg font-bold text-[var(--t-text)]">{t('app.title')}</h1>
 
       {/* Avatar */}
       {avatarUrl ? (

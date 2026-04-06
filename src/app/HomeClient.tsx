@@ -45,7 +45,7 @@ function getTodayDate(): string {
 }
 
 const TREND_COLORS: Record<Exclude<ExerciseTrend, 'new'>, string> = {
-  progress: 'text-green-400', regression: 'text-red-400', neutral: 'text-[#555]',
+  progress: 'text-green-400', regression: 'text-red-400', neutral: 'text-[var(--t-faint)]',
 };
 const TREND_ICONS: Record<Exclude<ExerciseTrend, 'new'>, string> = {
   progress: '↑', regression: '↓', neutral: '→',
@@ -186,28 +186,28 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
       <main className="flex-1 px-4 pb-28 pt-4">
         {/* Streak */}
         {streak > 0 && (
-          <div className="bg-[#141414] border border-[#1F1F1F] rounded-2xl p-4 mb-5">
+          <div className="bg-[var(--t-card)] border border-[var(--t-border)] rounded-2xl p-4 mb-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <span className="text-2xl leading-none">🔥</span>
                 <div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-2xl font-bold text-white">{streak}</span>
-                    <span className="text-sm text-[#888]">{pluralWorkouts(streak)} подряд</span>
+                    <span className="text-2xl font-bold text-[var(--t-text)]">{streak}</span>
+                    <span className="text-sm text-[var(--t-muted)]">{pluralWorkouts(streak)} подряд</span>
                   </div>
-                  <p className="text-xs text-[#555] mt-0.5">Серия тренировок</p>
+                  <p className="text-xs text-[var(--t-faint)] mt-0.5">Серия тренировок</p>
                 </div>
               </div>
               <button
                 onClick={() => setStreakInfoOpen(v => !v)}
-                className="w-7 h-7 flex items-center justify-center text-[#444] hover:text-[#888] transition-colors text-base rounded-lg hover:bg-white/5"
+                className="w-7 h-7 flex items-center justify-center text-[var(--t-icon)] hover:text-[var(--t-muted)] transition-colors text-base rounded-lg hover:bg-[var(--t-overlay)]"
                 aria-label="Как считается серия"
               >
                 ⓘ
               </button>
             </div>
             {streakInfoOpen && (
-              <p className="mt-3 pt-3 border-t border-[#1F1F1F] text-xs text-[#666] leading-relaxed">
+              <p className="mt-3 pt-3 border-t border-[var(--t-border)] text-xs text-[#666] leading-relaxed">
                 Серия не сбрасывается, если между тренировками не более 2 дней отдыха — как обычно бывает при тренировках через день. Пропустил 3 и более дней — серия обнуляется.
               </p>
             )}
@@ -216,18 +216,18 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
 
         {/* Search */}
         <div className="relative mb-5">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#444] text-sm pointer-events-none">🔍</span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--t-icon)] text-sm pointer-events-none">🔍</span>
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t('home.search')}
-            className="w-full bg-[#141414] border border-[#1F1F1F] text-white rounded-xl pl-9 pr-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors placeholder:text-[#444]"
+            className="w-full bg-[var(--t-card)] border border-[var(--t-border)] text-[var(--t-text)] rounded-xl pl-9 pr-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors placeholder:text-[var(--t-icon)]"
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#444] hover:text-white transition-colors text-lg leading-none"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[var(--t-icon)] hover:text-[var(--t-text)] transition-colors text-lg leading-none"
             >
               ×
             </button>
@@ -238,29 +238,29 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
         {todayStats && !q && (
           <section className="mb-5">
             <div className="flex items-center justify-between py-2 mb-1">
-              <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">Прогресс сегодня</span>
+              <span className="text-xs font-semibold text-[var(--t-faint)] uppercase tracking-wider">Прогресс сегодня</span>
               <Link href="/day" className="text-xs text-[#FF5722] hover:text-[#FF6D3A] transition-colors">
                 Подробнее →
               </Link>
             </div>
-            <div className="bg-[#141414] border border-[#1F1F1F] rounded-2xl overflow-hidden">
+            <div className="bg-[var(--t-card)] border border-[var(--t-border)] rounded-2xl overflow-hidden">
               {todayStats.exerciseStats.map((stat, i) => (
                 <Link
                   key={stat.exercise.id}
                   href={`/exercise/${stat.exercise.id}`}
-                  className={`flex items-center justify-between px-3 py-2.5 gap-3 hover:bg-[#1A1A1A] active:opacity-70 transition-all ${
-                    i > 0 ? 'border-t border-[#1A1A1A]' : ''
+                  className={`flex items-center justify-between px-3 py-2.5 gap-3 hover:bg-[var(--t-hover)] active:opacity-70 transition-all ${
+                    i > 0 ? 'border-t border-[var(--t-hover)]' : ''
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-lg leading-none shrink-0">{stat.exercise.icon}</span>
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-white truncate">{t(stat.exercise.nameKey)}</div>
-                      <div className="text-[11px] text-[#555]">{stat.todaySets} {pluralSets(stat.todaySets)}</div>
+                      <div className="text-sm font-medium text-[var(--t-text)] truncate">{t(stat.exercise.nameKey)}</div>
+                      <div className="text-[11px] text-[var(--t-faint)]">{stat.todaySets} {pluralSets(stat.todaySets)}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-[#555] tabular-nums">
+                    <span className="text-xs text-[var(--t-faint)] tabular-nums">
                       {formatVolumeSm(stat.todayVolume, stat.isBodyweight)}
                     </span>
                     <TodayTrendBadge trend={stat.trend} changePercent={stat.changePercent} />
@@ -275,7 +275,7 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
         {suggestedExercises.length > 0 && (
           <section className="mb-2">
             <div className="flex items-center justify-between py-2 mb-1">
-              <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">На сегодня</span>
+              <span className="text-xs font-semibold text-[var(--t-faint)] uppercase tracking-wider">На сегодня</span>
             </div>
             <div className={`grid gap-1.5 mb-4 ${layout === 'grid' ? 'grid-cols-2 gap-3' : 'grid-cols-1'}`}>
               {suggestedExercises.map(ex => (
@@ -297,13 +297,13 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
                 })}
                 className="w-full flex items-center justify-between py-2 mb-1 active:opacity-70 transition-opacity"
               >
-                <span className="text-xs font-semibold text-[#555] uppercase tracking-wider">
+                <span className="text-xs font-semibold text-[var(--t-faint)] uppercase tracking-wider">
                   {t(`categories.${category}`)}
                 </span>
                 <div className="flex items-center gap-1.5">
                   <svg
                     width="12" height="12" viewBox="0 0 12 12" fill="none"
-                    className={`text-[#444] transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`}
+                    className={`text-[var(--t-icon)] transition-transform duration-200 ${isCollapsed ? '-rotate-90' : ''}`}
                   >
                     <path d="M2 4.5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -334,7 +334,7 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
           className={`flex flex-col items-center justify-center gap-0.5 rounded-2xl transition-all active:scale-95 border ${
             running
               ? 'bg-[#FF5722]/10 border-[#FF5722]/40 text-[#FF5722] shadow-lg shadow-[#FF5722]/20 w-20'
-              : 'bg-[#141414] border-[#1F1F1F] text-[#888] hover:text-white hover:border-[#333] w-14'
+              : 'bg-[var(--t-card)] border-[var(--t-border)] text-[var(--t-muted)] hover:text-[var(--t-text)] hover:border-[var(--t-border3)] w-14'
           }`}
         >
           <span className="text-xl leading-none">⏱</span>

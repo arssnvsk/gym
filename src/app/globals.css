@@ -1,20 +1,60 @@
 @import "tailwindcss";
 
+/* ── Theme tokens ──────────────────────────────────────────── */
 :root {
-  --background: #0A0A0A;
-  --foreground: #ededed;
+  /* dark (default) */
+  --t-bg:          #0A0A0A;
+  --t-bg-alpha:    rgba(10, 10, 10, 0.80);
+  --t-card:        #141414;
+  --t-hover:       #1A1A1A;
+  --t-surface:     #111111;
+  --t-inset:       #0F0F0F;
+  --t-border:      #1F1F1F;
+  --t-border2:     #2A2A2A;
+  --t-border3:     #333333;
+  --t-icon:        #444444;
+  --t-faint:       #555555;
+  --t-sub:         #666666;
+  --t-muted:       #888888;
+  --t-text:        #ffffff;
+  --t-text-sub:    rgba(255, 255, 255, 0.80);
+  --t-overlay:     rgba(255, 255, 255, 0.05);
+  --t-overlay-md:  rgba(255, 255, 255, 0.10);
+  /* MuscleMap SVG */
+  --t-body-fill:   #242424;
+  --t-muscle-in:   #2C2C2C;
+  --t-outline:     #3A3A3A;
+  --t-divider:     #323232;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html.light {
+  --t-bg:          #F5F5F5;
+  --t-bg-alpha:    rgba(245, 245, 245, 0.90);
+  --t-card:        #FFFFFF;
+  --t-hover:       #EDEDED;
+  --t-surface:     #FAFAFA;
+  --t-inset:       #F0F0F0;
+  --t-border:      #E0E0E0;
+  --t-border2:     #CCCCCC;
+  --t-border3:     #BBBBBB;
+  --t-icon:        #9E9E9E;
+  --t-faint:       #757575;
+  --t-sub:         #616161;
+  --t-muted:       #424242;
+  --t-text:        #111111;
+  --t-text-sub:    rgba(0, 0, 0, 0.70);
+  --t-overlay:     rgba(0, 0, 0, 0.04);
+  --t-overlay-md:  rgba(0, 0, 0, 0.08);
+  /* MuscleMap SVG */
+  --t-body-fill:   #D5D5D5;
+  --t-muscle-in:   #C0C0C0;
+  --t-outline:     #999999;
+  --t-divider:     #B0B0B0;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--t-bg);
+  color: var(--t-text);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -26,6 +66,11 @@ body {
 select option {
   background-color: #141414;
   color: #fff;
+}
+
+html.light select option {
+  background-color: #ffffff;
+  color: #111;
 }
 
 .no-scrollbar {

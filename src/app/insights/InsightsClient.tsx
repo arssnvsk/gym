@@ -29,28 +29,28 @@ const SEV: Record<InsightSeverity, {
     border: 'border-l-green-400',
     badge: 'bg-green-400/15 text-green-300 border-green-400/30',
     actionBg: 'bg-green-400/8',
-    scienceColor: 'text-[#3a3a3a]',
+    scienceColor: 'text-[var(--t-sub)]',
   },
   warning: {
     label: 'Внимание',
     border: 'border-l-amber-500',
     badge: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
     actionBg: 'bg-amber-500/8',
-    scienceColor: 'text-[#3a3a3a]',
+    scienceColor: 'text-[var(--t-sub)]',
   },
   danger: {
     label: 'Важно',
     border: 'border-l-red-500',
     badge: 'bg-red-500/15 text-red-400 border-red-500/30',
     actionBg: 'bg-red-500/8',
-    scienceColor: 'text-[#3a3a3a]',
+    scienceColor: 'text-[var(--t-sub)]',
   },
   info: {
     label: 'Совет',
     border: 'border-l-[#FF5722]',
     badge: 'bg-[#FF5722]/15 text-[#FF5722] border-[#FF5722]/30',
     actionBg: 'bg-[#FF5722]/8',
-    scienceColor: 'text-[#3a3a3a]',
+    scienceColor: 'text-[var(--t-sub)]',
   },
 };
 
@@ -64,7 +64,7 @@ function InsightCard({ insight }: { insight: Insight }) {
   const bodyLines = insight.body.split('\n');
 
   return (
-    <div className={`bg-[#111] border border-[#1A1A1A] rounded-2xl overflow-hidden border-l-4 ${cfg.border}`}>
+    <div className={`bg-[var(--t-surface)] border border-[var(--t-hover)] rounded-2xl overflow-hidden border-l-4 ${cfg.border}`}>
       <div className="p-4">
         {/* Header row */}
         <div className="flex items-start gap-3 mb-3">
@@ -75,21 +75,21 @@ function InsightCard({ insight }: { insight: Insight }) {
                 {cfg.label}
               </span>
             </div>
-            <h3 className="text-sm font-semibold text-white leading-snug">{insight.title}</h3>
+            <h3 className="text-sm font-semibold text-[var(--t-text)] leading-snug">{insight.title}</h3>
           </div>
         </div>
 
         {/* Body */}
         <div className="ml-9 space-y-1 mb-3">
           {bodyLines.map((line, i) => (
-            <p key={i} className="text-sm text-[#888] leading-relaxed">{line}</p>
+            <p key={i} className="text-sm text-[var(--t-muted)] leading-relaxed">{line}</p>
           ))}
         </div>
 
         {/* Action */}
-        <div className={`ml-9 rounded-xl px-3 py-2.5 ${cfg.actionBg} border border-white/5`}>
-          <p className="text-xs text-white/80 leading-relaxed">
-            <span className="font-semibold text-white">→ </span>
+        <div className={`ml-9 rounded-xl px-3 py-2.5 ${cfg.actionBg} border border-[var(--t-overlay)]`}>
+          <p className="text-xs text-[var(--t-text-sub)] leading-relaxed">
+            <span className="font-semibold text-[var(--t-text)]">→ </span>
             {insight.action}
           </p>
         </div>
@@ -97,14 +97,14 @@ function InsightCard({ insight }: { insight: Insight }) {
         {/* Science toggle */}
         <button
           onClick={() => setScienceOpen(v => !v)}
-          className="ml-9 mt-2 flex items-center gap-1 text-[#444] hover:text-[#666] transition-colors"
+          className="ml-9 mt-2 flex items-center gap-1 text-[var(--t-icon)] hover:text-[var(--t-sub)] transition-colors"
         >
           <span className="text-[10px]">📚</span>
           <span className="text-[10px]">Научное обоснование</span>
           <span className="text-[10px]">{scienceOpen ? '▲' : '▼'}</span>
         </button>
         {scienceOpen && (
-          <p className="ml-9 mt-1 text-[11px] text-[#555] leading-relaxed italic">
+          <p className="ml-9 mt-1 text-[11px] text-[var(--t-faint)] leading-relaxed italic">
             {insight.science}
           </p>
         )}
@@ -171,23 +171,23 @@ export default function InsightsClient() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <div className="sticky top-0 bg-[#0A0A0A] z-10 border-b border-[#1A1A1A]">
+      <div className="sticky top-0 bg-[var(--t-bg)] z-10 border-b border-[var(--t-hover)]">
         <div className="flex items-center gap-2 px-4 pt-2 pb-2">
           <Link
             href="/"
-            className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[#888] hover:text-white active:bg-white/5 transition-colors text-sm font-medium shrink-0"
+            className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] active:bg-[var(--t-overlay)] transition-colors text-sm font-medium shrink-0"
           >
             <span className="text-lg leading-none">‹</span>
             <span>Назад</span>
           </Link>
-          <span className="text-white font-semibold">Советы</span>
+          <span className="text-[var(--t-text)] font-semibold">Советы</span>
         </div>
       </div>
 
       {/* Loading */}
       {loading && (
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-[#444] text-sm">Анализируем данные...</div>
+          <div className="text-[var(--t-icon)] text-sm">Анализируем данные...</div>
         </div>
       )}
 
@@ -195,7 +195,7 @@ export default function InsightsClient() {
       {!loading && insights.length === 0 && (
         <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4">
           <span className="text-5xl">🧪</span>
-          <p className="text-[#888] text-sm text-center">
+          <p className="text-[var(--t-muted)] text-sm text-center">
             Нужно больше данных для анализа.{'\n'}Добавь несколько тренировок.
           </p>
           <Link
@@ -227,7 +227,7 @@ export default function InsightsClient() {
                 {counts.good} всё хорошо
               </span>
             )}
-            <span className="text-xs px-3 py-1 rounded-full bg-[#1A1A1A] text-[#666] border border-[#222]">
+            <span className="text-xs px-3 py-1 rounded-full bg-[var(--t-hover)] text-[var(--t-sub)] border border-[var(--t-border)]">
               {insights.length} советов
             </span>
           </div>
@@ -238,7 +238,7 @@ export default function InsightsClient() {
           ))}
 
           {/* Footer note */}
-          <p className="text-[11px] text-[#333] text-center pt-2 pb-4 leading-relaxed">
+          <p className="text-[11px] text-[var(--t-border3)] text-center pt-2 pb-4 leading-relaxed">
             Советы основаны на данных твоих тренировок и спортивной науке.{'\n'}Не заменяют консультацию тренера.
           </p>
         </main>

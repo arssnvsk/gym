@@ -95,7 +95,7 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
         ↓ {t('exercise.regression')}
       </span>
     );
-    return <span className="text-xs text-[#555]">→</span>;
+    return <span className="text-xs text-[var(--t-faint)]">→</span>;
   }
 
   // Group sets by day, most recent first, last 10 days
@@ -137,10 +137,10 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center gap-3 px-4 py-1 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-[#1F1F1F]">
+      <header className="sticky top-0 z-10 flex items-center gap-3 px-4 py-1 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[#888] hover:text-white active:bg-white/5 transition-colors text-sm font-medium"
+          className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] active:bg-[var(--t-overlay)] transition-colors text-sm font-medium"
         >
           <span className="text-lg leading-none">‹</span>
           <span>{t('exercise.backToHome')}</span>
@@ -151,20 +151,20 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
         {/* Title */}
         <div className="flex items-center gap-3">
           <span className="text-3xl">{exercise.icon}</span>
-          <h1 className="text-xl font-bold text-white">{t(exercise.nameKey)}</h1>
+          <h1 className="text-xl font-bold text-[var(--t-text)]">{t(exercise.nameKey)}</h1>
         </div>
 
         {loading ? (
           <div className="space-y-4">
             {[...Array(2)].map((_, i) => (
-              <div key={i} className="bg-[#141414] border border-[#1F1F1F] rounded-2xl p-4 h-40 animate-pulse" />
+              <div key={i} className="bg-[var(--t-card)] border border-[var(--t-border)] rounded-2xl p-4 h-40 animate-pulse" />
             ))}
           </div>
         ) : (
           <>
             {/* Muscle map — always visible */}
-            <div className="bg-[#141414] border border-[#1F1F1F] rounded-2xl p-4">
-              <p className="text-sm font-semibold text-white mb-4">{t('exercise.muscles')}</p>
+            <div className="bg-[var(--t-card)] border border-[var(--t-border)] rounded-2xl p-4">
+              <p className="text-sm font-semibold text-[var(--t-text)] mb-4">{t('exercise.muscles')}</p>
               <MuscleMap
                 primary={exercise.muscles.primary}
                 secondary={exercise.muscles.secondary}
@@ -172,7 +172,7 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
             </div>
 
             {sets.length === 0 ? (
-              <div className="text-center py-10 text-[#555]">
+              <div className="text-center py-10 text-[var(--t-faint)]">
                 <div className="text-4xl mb-3">📊</div>
                 <p className="text-sm">{t('exercise.noData')}</p>
               </div>
@@ -181,13 +181,13 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
             <div className="grid grid-cols-2 gap-3">
               {/* Personal Record */}
               {pr && (
-                <div className="bg-[#141414] border border-[#1F1F1F] rounded-2xl p-4">
-                  <p className="text-xs text-[#555] uppercase tracking-wider mb-1">{t('exercise.pr')}</p>
-                  <p className="text-2xl font-bold text-white">
+                <div className="bg-[var(--t-card)] border border-[var(--t-border)] rounded-2xl p-4">
+                  <p className="text-xs text-[var(--t-faint)] uppercase tracking-wider mb-1">{t('exercise.pr')}</p>
+                  <p className="text-2xl font-bold text-[var(--t-text)]">
                     {pr.weight}
                     <span className="text-sm font-normal text-[#FF5722] ml-1">{t('exercise.chartKg')}</span>
                   </p>
-                  <p className="text-xs text-[#555] mt-1">
+                  <p className="text-xs text-[var(--t-faint)] mt-1">
                     {new Date(pr.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
                 </div>
@@ -195,21 +195,21 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
 
               {/* Last session volume */}
               {volumeData.length > 0 && (
-                <div className="bg-[#141414] border border-[#1F1F1F] rounded-2xl p-4">
-                  <p className="text-xs text-[#555] uppercase tracking-wider mb-1">{t('exercise.lastVolume')}</p>
-                  <p className="text-2xl font-bold text-white">
+                <div className="bg-[var(--t-card)] border border-[var(--t-border)] rounded-2xl p-4">
+                  <p className="text-xs text-[var(--t-faint)] uppercase tracking-wider mb-1">{t('exercise.lastVolume')}</p>
+                  <p className="text-2xl font-bold text-[var(--t-text)]">
                     {volumeData[volumeData.length - 1].value.toLocaleString('ru-RU')}
                     <span className="text-sm font-normal text-[#FF8A65] ml-1">{t('exercise.chartKg')}</span>
                   </p>
-                  <p className="text-xs text-[#555] mt-1">{t('exercise.volumeHint')}</p>
+                  <p className="text-xs text-[var(--t-faint)] mt-1">{t('exercise.volumeHint')}</p>
                 </div>
               )}
             </div>
 
             {/* Volume chart */}
-            <div className="bg-[#141414] border border-[#1F1F1F] rounded-2xl p-4">
+            <div className="bg-[var(--t-card)] border border-[var(--t-border)] rounded-2xl p-4">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-sm font-semibold text-white">{t('exercise.volumeChart')}</span>
+                <span className="text-sm font-semibold text-[var(--t-text)]">{t('exercise.volumeChart')}</span>
                 <TrendBadge trend={volumeTrend} />
               </div>
               <ProgressChart
@@ -221,9 +221,9 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
             </div>
 
             {/* History grouped by day */}
-            <div className="bg-[#141414] border border-[#1F1F1F] rounded-2xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-[#1F1F1F]">
-                <h2 className="text-sm font-semibold text-white">{t('exercise.history')}</h2>
+            <div className="bg-[var(--t-card)] border border-[var(--t-border)] rounded-2xl overflow-hidden">
+              <div className="px-4 py-3 border-b border-[var(--t-border)]">
+                <h2 className="text-sm font-semibold text-[var(--t-text)]">{t('exercise.history')}</h2>
               </div>
               {groupedByDay.map(({ date, label, volume, daySets }) => {
                 const allBodyweight = daySets.every(s => s.weight === 0);
@@ -240,17 +240,17 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
                     {/* Day header — accordion trigger */}
                     <button
                       onClick={toggleDate}
-                      className="w-full flex items-center justify-between px-4 py-3 bg-[#0F0F0F] border-b border-[#1F1F1F] active:bg-white/5 transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-3 bg-[var(--t-inset)] border-b border-[var(--t-border)] active:bg-[var(--t-overlay)] transition-colors"
                     >
                       <div className="flex items-center gap-2">
-                        <span className={`text-xs transition-transform duration-200 ${isOpen ? 'rotate-90' : ''} text-[#444]`}>▶</span>
-                        <span className="text-xs font-semibold text-[#888] uppercase tracking-wider">{label}</span>
+                        <span className={`text-xs transition-transform duration-200 ${isOpen ? 'rotate-90' : ''} text-[var(--t-icon)]`}>▶</span>
+                        <span className="text-xs font-semibold text-[var(--t-muted)] uppercase tracking-wider">{label}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-[#555] tabular-nums">
+                        <span className="text-xs text-[var(--t-faint)] tabular-nums">
                           {allBodyweight ? `${volume} повт.` : `${volume.toLocaleString('ru-RU')} кг`}
                         </span>
-                        <span className="text-[11px] text-[#444]">{daySets.length} × </span>
+                        <span className="text-[11px] text-[var(--t-icon)]">{daySets.length} × </span>
                       </div>
                     </button>
                     {/* Sets — only when expanded */}
@@ -260,19 +260,19 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
                         <div
                           key={s.id}
                           className={`flex items-center justify-between px-4 py-3 transition-colors ${
-                            i < daySets.length - 1 ? 'border-b border-[#1A1A1A]' : ''
-                          } ${isConfirming ? 'bg-red-950/20' : 'hover:bg-[#1A1A1A]'}`}
+                            i < daySets.length - 1 ? 'border-b border-[var(--t-hover)]' : ''
+                          } ${isConfirming ? 'bg-red-950/20' : 'hover:bg-[var(--t-hover)]'}`}
                         >
                           <div className="flex items-center gap-1.5 text-sm">
                             {s.weight > 0 ? (
                               <>
-                                <span className="text-white font-semibold">{s.weight}</span>
-                                <span className="text-[#555] text-xs">{t('home.kg')}</span>
-                                <span className="text-[#333] mx-0.5">×</span>
+                                <span className="text-[var(--t-text)] font-semibold">{s.weight}</span>
+                                <span className="text-[var(--t-faint)] text-xs">{t('home.kg')}</span>
+                                <span className="text-[var(--t-border3)] mx-0.5">×</span>
                               </>
                             ) : null}
-                            <span className="text-white font-semibold">{s.reps}</span>
-                            <span className="text-[#555] text-xs">{t('home.lastReps')}</span>
+                            <span className="text-[var(--t-text)] font-semibold">{s.reps}</span>
+                            <span className="text-[var(--t-faint)] text-xs">{t('home.lastReps')}</span>
                           </div>
                           <div className="flex items-center gap-1">
                             {isConfirming ? (
@@ -286,7 +286,7 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
                                 </button>
                                 <button
                                   onClick={() => setConfirmDeleteId(null)}
-                                  className="text-xs text-[#555] hover:text-white px-2 py-1"
+                                  className="text-xs text-[var(--t-faint)] hover:text-[var(--t-text)] px-2 py-1"
                                 >
                                   {t('exercise.cancelDelete')}
                                 </button>
@@ -295,12 +295,12 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
                               <>
                                 <button
                                   onClick={() => setEditingSet(s)}
-                                  className="w-7 h-7 flex items-center justify-center text-[#555] hover:text-white hover:bg-[#1F1F1F] rounded-lg transition-colors text-sm"
+                                  className="w-7 h-7 flex items-center justify-center text-[var(--t-faint)] hover:text-[var(--t-text)] hover:bg-[var(--t-border)] rounded-lg transition-colors text-sm"
                                   title={t('exercise.editSet')}
                                 >✎</button>
                                 <button
                                   onClick={() => setConfirmDeleteId(s.id)}
-                                  className="w-7 h-7 flex items-center justify-center text-[#555] hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-colors text-sm"
+                                  className="w-7 h-7 flex items-center justify-center text-[var(--t-faint)] hover:text-red-400 hover:bg-red-950/30 rounded-lg transition-colors text-sm"
                                   title={t('exercise.deleteSet')}
                                 >✕</button>
                               </>

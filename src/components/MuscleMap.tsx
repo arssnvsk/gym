@@ -3,13 +3,13 @@
 import { useTranslations } from 'next-intl';
 import type { MuscleGroup } from '@/types';
 
-/* ── colours ────────────────────────────────────────────────── */
+/* ── colours — via CSS custom properties so they respond to theme ── */
 const PRIMARY   = '#FF5722';
 const SECONDARY = '#7C2A10';
-const BODY_FILL = '#242424';      // body base
-const MUSCLE_IN = '#2C2C2C';     // inactive muscle zone fill
-const OUTLINE   = '#3A3A3A';     // outer silhouette stroke
-const DIVIDER   = '#323232';     // inner muscle division lines
+const BODY_FILL = 'var(--t-body-fill)';
+const MUSCLE_IN = 'var(--t-muscle-in)';
+const OUTLINE   = 'var(--t-outline)';
+const DIVIDER   = 'var(--t-divider)';
 
 interface Props { primary: MuscleGroup[]; secondary: MuscleGroup[] }
 
@@ -34,21 +34,21 @@ const LEG_RC = 'M83,228 L63,228 C60,240 58,258 60,270 C62,280 67,283 73,283 C79,
 
 const ALL_PATHS = [NECK,TORSO,ARM_LU,ARM_RU,ARM_LF,ARM_RF,LEG_LU,LEG_RU,LEG_LC,LEG_RC];
 
-/* ── shared body base + outline components ───────────────────── */
+/* Use style={{ fill }} so the browser resolves CSS custom properties */
 function BodyFill() {
   return (
     <>
-      <ellipse {...HEAD} fill={BODY_FILL} />
-      {ALL_PATHS.map((d, i) => <path key={i} d={d} fill={BODY_FILL} />)}
+      <ellipse {...HEAD} style={{ fill: BODY_FILL }} />
+      {ALL_PATHS.map((d, i) => <path key={i} d={d} style={{ fill: BODY_FILL }} />)}
     </>
   );
 }
 function BodyStroke() {
   return (
     <>
-      <ellipse {...HEAD} fill="none" stroke={OUTLINE} strokeWidth="1.5" />
+      <ellipse {...HEAD} fill="none" style={{ stroke: OUTLINE }} strokeWidth="1.5" />
       {ALL_PATHS.map((d, i) => (
-        <path key={i} d={d} fill="none" stroke={OUTLINE} strokeWidth="1.5" strokeLinejoin="round" />
+        <path key={i} d={d} fill="none" style={{ stroke: OUTLINE }} strokeWidth="1.5" strokeLinejoin="round" />
       ))}
     </>
   );
@@ -75,12 +75,11 @@ function FrontSVG({ primary: p, secondary: s }: Props) {
         {/* Side delts */}
         <ellipse cx="3"  cy="56" rx="5"  ry="7"  fill={m('side_delts')}  stroke={DIVIDER} strokeWidth="0.5" />
         <ellipse cx="97" cy="56" rx="5"  ry="7"  fill={m('side_delts')}  stroke={DIVIDER} strokeWidth="0.5" />
-        {/* Chest — fan-shaped, wider in the middle */}
+        {/* Chest */}
         <path d="M50,60 C44,56 30,58 24,70 C20,80 24,92 32,94 C40,96 48,90 50,82 Z"
               fill={m('chest')} stroke={DIVIDER} strokeWidth="0.5" />
         <path d="M50,60 C56,56 70,58 76,70 C80,80 76,92 68,94 C60,96 52,90 50,82 Z"
               fill={m('chest')} stroke={DIVIDER} strokeWidth="0.5" />
-        {/* Sternum divider line */}
         <line x1="50" y1="60" x2="50" y2="92" stroke={DIVIDER} strokeWidth="0.8" />
         {/* Biceps */}
         <path d="M4,56 C2,66 1,78 2,90 C3,98 7,102 11,101 C15,101 18,97 18,90 C18,78 17,64 15,56 C13,50 7,50 4,56 Z"
@@ -92,7 +91,7 @@ function FrontSVG({ primary: p, secondary: s }: Props) {
               fill={m('forearms')} stroke={DIVIDER} strokeWidth="0.5" />
         <path d="M95,102 C98,114 98,130 97,140 C96,148 92,151 89,151 C85,151 82,148 82,141 C82,130 82,114 83,102 Z"
               fill={m('forearms')} stroke={DIVIDER} strokeWidth="0.5" />
-        {/* Abs — 6-pack */}
+        {/* Abs */}
         <rect x="40" y="97"  width="9" height="11" rx="3" fill={m('abs')} stroke={DIVIDER} strokeWidth="0.5" />
         <rect x="51" y="97"  width="9" height="11" rx="3" fill={m('abs')} stroke={DIVIDER} strokeWidth="0.5" />
         <rect x="40" y="110" width="9" height="11" rx="3" fill={m('abs')} stroke={DIVIDER} strokeWidth="0.5" />
@@ -139,17 +138,16 @@ function BackSVG({ primary: p, secondary: s }: Props) {
         {/* Rear delts */}
         <ellipse cx="12" cy="50" rx="9"  ry="9"  fill={m('rear_delts')}  stroke={DIVIDER} strokeWidth="0.5" />
         <ellipse cx="88" cy="50" rx="9"  ry="9"  fill={m('rear_delts')}  stroke={DIVIDER} strokeWidth="0.5" />
-        {/* Trapezius — diamond/kite shape */}
+        {/* Trapezius */}
         <path d="M50,38 C40,46 22,58 22,72 C22,82 30,86 38,84 C44,82 48,76 50,68 C52,76 56,82 62,84 C70,86 78,82 78,72 C78,58 60,46 50,38 Z"
               fill={m('upper_back')} stroke={DIVIDER} strokeWidth="0.5" />
-        {/* Spine divider */}
         <line x1="50" y1="40" x2="50" y2="148" stroke={DIVIDER} strokeWidth="0.8" />
         {/* Lats */}
         <path d="M20,72 C14,84 12,102 14,118 C15,128 19,134 24,133 C28,132 30,126 32,116 C34,104 34,88 32,76 C30,68 24,68 20,72 Z"
               fill={m('lats')} stroke={DIVIDER} strokeWidth="0.5" />
         <path d="M80,72 C86,84 88,102 86,118 C85,128 81,134 76,133 C72,132 70,126 68,116 C66,104 66,88 68,76 C70,68 76,68 80,72 Z"
               fill={m('lats')} stroke={DIVIDER} strokeWidth="0.5" />
-        {/* Lower back (erectors) */}
+        {/* Lower back */}
         <path d="M44,100 C42,114 42,128 44,140 C45,147 48,150 50,150 C52,150 55,147 56,140 C58,128 58,114 56,100 C55,94 52,92 50,92 C48,92 45,94 44,100 Z"
               fill={m('lower_back')} stroke={DIVIDER} strokeWidth="0.5" />
         {/* Triceps */}
@@ -208,11 +206,11 @@ export default function MuscleMap({ primary, secondary }: Props) {
     <div>
       <div className="flex gap-6 justify-center mb-4">
         <div className="flex flex-col items-center gap-2">
-          <span className="text-[10px] text-[#444] uppercase tracking-widest">{t('exercise.musclesFront')}</span>
+          <span className="text-[10px] text-[var(--t-icon)] uppercase tracking-widest">{t('exercise.musclesFront')}</span>
           <FrontSVG primary={primary} secondary={secondary} />
         </div>
         <div className="flex flex-col items-center gap-2">
-          <span className="text-[10px] text-[#444] uppercase tracking-widest">{t('exercise.musclesBack')}</span>
+          <span className="text-[10px] text-[var(--t-icon)] uppercase tracking-widest">{t('exercise.musclesBack')}</span>
           <BackSVG primary={primary} secondary={secondary} />
         </div>
       </div>

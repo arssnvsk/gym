@@ -58,12 +58,12 @@ export default function AddSetModal({ onClose, onSuccess, userId, defaultExercis
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md bg-[#141414] border border-[#1F1F1F] rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl">
+      <div className="w-full max-w-md bg-[var(--t-card)] border border-[var(--t-border)] rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-white">{editMode ? t('addSet.editTitle') : t('addSet.title')}</h2>
+          <h2 className="text-lg font-bold text-[var(--t-text)]">{editMode ? t('addSet.editTitle') : t('addSet.title')}</h2>
           <button
             onClick={onClose}
-            className="text-[#555] hover:text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#1F1F1F] transition-colors text-xl"
+            className="text-[var(--t-faint)] hover:text-[var(--t-text)] w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--t-border)] transition-colors text-xl"
           >
             ×
           </button>
@@ -73,16 +73,16 @@ export default function AddSetModal({ onClose, onSuccess, userId, defaultExercis
           {/* Exercise select — only in add mode */}
           {!editMode && (
             <div>
-              <label className="block text-xs text-[#888] mb-1.5 font-medium">
+              <label className="block text-xs text-[var(--t-muted)] mb-1.5 font-medium">
                 {t('addSet.exercise')}
               </label>
               <select
                 value={exerciseId}
                 onChange={(e) => setExerciseId(e.target.value)}
                 required
-                className="w-full bg-[#0A0A0A] border border-[#1F1F1F] text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors appearance-none"
+                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors appearance-none"
               >
-                <option value="" disabled className="text-[#555]">
+                <option value="" disabled className="text-[var(--t-faint)]">
                   {t('addSet.selectExercise')}
                 </option>
                 {EXERCISES.map((ex) => (
@@ -97,7 +97,7 @@ export default function AddSetModal({ onClose, onSuccess, userId, defaultExercis
           {/* Weight + Reps row */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-[#888] mb-1.5 font-medium">
+              <label className="block text-xs text-[var(--t-muted)] mb-1.5 font-medium">
                 {t('addSet.weight')}
               </label>
               <input
@@ -108,11 +108,11 @@ export default function AddSetModal({ onClose, onSuccess, userId, defaultExercis
                 min="0"
                 step="0.5"
                 placeholder="100"
-                className="w-full bg-[#0A0A0A] border border-[#1F1F1F] text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
             <div>
-              <label className="block text-xs text-[#888] mb-1.5 font-medium">
+              <label className="block text-xs text-[var(--t-muted)] mb-1.5 font-medium">
                 {t('addSet.reps')}
               </label>
               <input
@@ -123,7 +123,7 @@ export default function AddSetModal({ onClose, onSuccess, userId, defaultExercis
                 min="1"
                 step="1"
                 placeholder="8"
-                className="w-full bg-[#0A0A0A] border border-[#1F1F1F] text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function AddSetModal({ onClose, onSuccess, userId, defaultExercis
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 rounded-xl border border-[#1F1F1F] text-[#888] text-sm font-medium hover:bg-[#1F1F1F] transition-colors"
+              className="flex-1 py-3 rounded-xl border border-[var(--t-border)] text-[var(--t-muted)] text-sm font-medium hover:bg-[var(--t-border)] transition-colors"
             >
               {t('addSet.cancel')}
             </button>

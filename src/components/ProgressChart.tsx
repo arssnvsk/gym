@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import type { ChartPoint } from '@/types';
+import { useTheme } from '@/components/ThemeProvider';
 
 interface ProgressChartProps {
   data: ChartPoint[];
@@ -24,12 +25,15 @@ function formatDate(dateStr: string) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function CustomTooltip({ active, payload, label, unit }: any) {
+function CustomTooltip({ active, payload, label, unit, tooltipBg, tooltipBorder, tooltipDate, tooltipText }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl px-3 py-2 text-xs shadow-xl">
-      <p className="text-[#888] mb-1">{formatDate(label)}</p>
-      <p className="text-white font-semibold">
+    <div
+      className="rounded-xl px-3 py-2 text-xs shadow-xl border"
+      style={{ background: tooltipBg, borderColor: tooltipBorder }}
+    >
+      <p className="mb-1" style={{ color: tooltipDate }}>{formatDate(label)}</p>
+      <p className="font-semibold" style={{ color: tooltipText }}>
         {payload[0].value} <span className="text-[#FF5722]">{unit}</span>
       </p>
     </div>
@@ -42,9 +46,20 @@ export default function ProgressChart({
   unit,
   color = '#FF5722',
 }: ProgressChartProps) {
+  const { resolved } = useTheme();
+  const isDark = resolved === 'dark';
+
+  const gridColor    = isDark ? '#1F1F1F' : '#E0E0E0';
+  const tickColor    = isDark ? '#555555' : '#888888';
+  const tooltipBg    = isDark ? '#1A1A1A' : '#FFFFFF';
+  const tooltipBorder = isDark ? '#2A2A2A' : '#E0E0E0';
+  const tooltipDate  = isDark ? '#888888' : '#616161';
+  const tooltipText  = isDark ? '#ffffff' : '#111111';
+  const labelColor   = isDark ? '#888888' : '#424242';
+
   if (data.length === 0) {
     return (
-      <div className="h-40 flex items-center justify-center text-[#444] text-sm">
+      <div className="h-40 flex items-center justify-center text-[var(--t-icon)] text-sm">
         —
       </div>
     );
@@ -52,7 +67,7 @@ export default function ProgressChart({
 
   return (
     <div>
-      <p className="text-xs text-[#888] font-medium mb-3 uppercase tracking-wider">{label}</p>
+      <p className="text-xs font-medium mb-3 uppercase tracking-wider" style={{ color: labelColor }}>{label}</p>
       <ResponsiveContainer width="100%" height={160}>
         <AreaChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
           <defs>
@@ -61,21 +76,31 @@ export default function ProgressChart({
               <stop offset="95%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#1F1F1F" />
+          <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
           <XAxis
             dataKey="date"
             tickFormatter={formatDate}
-            tick={{ fill: '#555', fontSize: 10 }}
+            tick={{ fill: tickColor, fontSize: 10 }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: '#555', fontSize: 10 }}
+            tick={{ fill: tickColor, fontSize: 10 }}
             axisLine={false}
             tickLine={false}
             domain={['auto', 'auto']}
           />
-          <Tooltip content={<CustomTooltip unit={unit} />} />
+          <Tooltip
+            content={
+              <CustomTooltip
+                unit={unit}
+                tooltipBg={tooltipBg}
+                tooltipBorder={tooltipBorder}
+                tooltipDate={tooltipDate}
+                tooltipText={tooltipText}
+              />
+            }
+          />
           <Area
             type="monotone"
             dataKey="value"

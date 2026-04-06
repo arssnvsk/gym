@@ -81,12 +81,12 @@ const DAY_TREND_CONFIG: Record<DayTrend, {
 }> = {
   progress:   { icon: '↑', label: 'Прогресс',           bg: 'bg-green-500/10',    border: 'border-green-500/20',    textColor: 'text-green-400' },
   regression: { icon: '↓', label: 'Регресс',             bg: 'bg-red-500/10',      border: 'border-red-500/20',      textColor: 'text-red-400' },
-  neutral:    { icon: '→', label: 'Без изменений',        bg: 'bg-[#1A1A1A]',       border: 'border-[#2A2A2A]',       textColor: 'text-[#888]' },
+  neutral:    { icon: '→', label: 'Без изменений',        bg: 'bg-[var(--t-hover)]',       border: 'border-[var(--t-border2)]',       textColor: 'text-[var(--t-muted)]' },
   first:      { icon: '★', label: 'Первая тренировка',   bg: 'bg-[#FF5722]/10',    border: 'border-[#FF5722]/20',    textColor: 'text-[#FF5722]' },
 };
 
 const EXERCISE_TREND_COLORS: Record<Exclude<ExerciseTrend, 'new'>, string> = {
-  progress: 'text-green-400', regression: 'text-red-400', neutral: 'text-[#555]',
+  progress: 'text-green-400', regression: 'text-red-400', neutral: 'text-[var(--t-faint)]',
 };
 const EXERCISE_TREND_ICONS: Record<Exclude<ExerciseTrend, 'new'>, string> = {
   progress: '↑', regression: '↓', neutral: '→',
@@ -179,16 +179,16 @@ export default function DayClient() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <div className="sticky top-0 bg-[#0A0A0A] z-10 border-b border-[#1A1A1A]">
+      <div className="sticky top-0 bg-[var(--t-bg)] z-10 border-b border-[var(--t-hover)]">
         <div className="flex items-center gap-2 px-4 pt-2 pb-2">
           <Link
             href="/"
-            className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[#888] hover:text-white active:bg-white/5 transition-colors text-sm font-medium shrink-0"
+            className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] active:bg-[var(--t-overlay)] transition-colors text-sm font-medium shrink-0"
           >
             <span className="text-lg leading-none">‹</span>
             <span>Назад</span>
           </Link>
-          <span className="text-white font-semibold truncate">
+          <span className="text-[var(--t-text)] font-semibold truncate">
             {formatHeaderDate(selectedDate, today)}
           </span>
         </div>
@@ -204,7 +204,7 @@ export default function DayClient() {
                 className={`shrink-0 px-3 py-1.5 rounded-xl text-sm font-medium transition-all active:scale-95 ${
                   date === selectedDate
                     ? 'bg-[#FF5722] text-white'
-                    : 'bg-[#141414] border border-[#1F1F1F] text-[#666] hover:text-white hover:border-[#333]'
+                    : 'bg-[var(--t-card)] border border-[var(--t-border)] text-[var(--t-sub)] hover:text-[var(--t-text)] hover:border-[var(--t-border3)]'
                 }`}
               >
                 {formatChipDate(date, today)}
@@ -217,7 +217,7 @@ export default function DayClient() {
       {/* Loading */}
       {loading && (
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-[#444] text-sm">Загрузка...</div>
+          <div className="text-[var(--t-icon)] text-sm">Загрузка...</div>
         </div>
       )}
 
@@ -225,7 +225,7 @@ export default function DayClient() {
       {!loading && !stats && (
         <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4">
           <span className="text-5xl">🏃</span>
-          <p className="text-[#888] text-sm text-center">
+          <p className="text-[var(--t-muted)] text-sm text-center">
             {isToday ? 'Сегодня ещё не тренировался' : 'В этот день не было тренировки'}
           </p>
           {isToday && (
@@ -249,44 +249,44 @@ export default function DayClient() {
               <div>
                 <div className={`text-lg font-bold leading-tight ${cfg.textColor}`}>{cfg.label}</div>
                 {summaryParts.length > 0 && (
-                  <div className="text-xs text-[#666] mt-1">{summaryParts.join(' · ')}</div>
+                  <div className="text-xs text-[var(--t-sub)] mt-1">{summaryParts.join(' · ')}</div>
                 )}
               </div>
             </div>
           </div>
 
           {/* Muscle map */}
-          <div className="bg-[#111] border border-[#1A1A1A] rounded-2xl p-4">
-            <h2 className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-4">
+          <div className="bg-[var(--t-surface)] border border-[var(--t-hover)] rounded-2xl p-4">
+            <h2 className="text-xs font-semibold text-[var(--t-faint)] uppercase tracking-wider mb-4">
               Активные мышцы
             </h2>
             <MuscleMap primary={stats.primaryMuscles} secondary={stats.secondaryMuscles} />
           </div>
 
           {/* Exercise breakdown */}
-          <div className="bg-[#111] border border-[#1A1A1A] rounded-2xl overflow-hidden">
+          <div className="bg-[var(--t-surface)] border border-[var(--t-hover)] rounded-2xl overflow-hidden">
             <div className="px-4 pt-4 pb-3">
-              <h2 className="text-xs font-semibold text-[#555] uppercase tracking-wider">
+              <h2 className="text-xs font-semibold text-[var(--t-faint)] uppercase tracking-wider">
                 Разбивка по упражнениям
               </h2>
             </div>
-            <div className="divide-y divide-[#1A1A1A]">
+            <div className="divide-y divide-[var(--t-hover)]">
               {stats.exerciseStats.map((stat) => (
                 <div key={stat.exercise.id} className="px-4 py-3 flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-lg leading-none shrink-0">{stat.exercise.icon}</span>
-                      <span className="text-sm font-medium text-white truncate">
+                      <span className="text-sm font-medium text-[var(--t-text)] truncate">
                         {t(stat.exercise.nameKey)}
                       </span>
                     </div>
-                    <div className="text-[11px] text-[#555] mt-0.5 ml-7">
+                    <div className="text-[11px] text-[var(--t-faint)] mt-0.5 ml-7">
                       {stat.todaySets}&nbsp;{pluralSets(stat.todaySets)}
                       {stat.prevDate && ` · был ${formatShortDate(stat.prevDate)}`}
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span className="text-sm font-semibold text-white tabular-nums">
+                    <span className="text-sm font-semibold text-[var(--t-text)] tabular-nums">
                       {formatVolume(stat.todayVolume, stat.isBodyweight)}
                     </span>
                     <TrendBadge trend={stat.trend} changePercent={stat.changePercent} />

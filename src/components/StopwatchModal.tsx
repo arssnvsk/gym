@@ -33,12 +33,12 @@ export default function StopwatchModal({
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full max-w-md bg-[#141414] border border-[#1F1F1F] rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl">
+      <div className="w-full max-w-md bg-[var(--t-card)] border border-[var(--t-border)] rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-lg font-bold text-white">{t('stopwatch.title')}</h2>
+          <h2 className="text-lg font-bold text-[var(--t-text)]">{t('stopwatch.title')}</h2>
           <button
             onClick={onClose}
-            className="text-[#555] hover:text-white w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#1F1F1F] transition-colors text-xl"
+            className="text-[var(--t-faint)] hover:text-[var(--t-text)] w-8 h-8 flex items-center justify-center rounded-full hover:bg-[var(--t-border)] transition-colors text-xl"
           >
             ×
           </button>
@@ -48,7 +48,7 @@ export default function StopwatchModal({
         <div className="flex items-center justify-center mb-10">
           <span
             className="font-mono font-bold tabular-nums tracking-tight"
-            style={{ fontSize: '4rem', lineHeight: 1, color: running ? '#FF5722' : '#fff' }}
+            style={{ fontSize: '4rem', lineHeight: 1, color: running ? '#FF5722' : 'var(--t-text)' }}
           >
             {formatTime(elapsed)}
           </span>
@@ -59,7 +59,7 @@ export default function StopwatchModal({
           <button
             onClick={onReset}
             disabled={elapsed === 0}
-            className="flex-1 py-3.5 rounded-2xl border border-[#1F1F1F] text-[#888] font-semibold hover:bg-[#1F1F1F] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 py-3.5 rounded-2xl border border-[var(--t-border)] text-[var(--t-muted)] font-semibold hover:bg-[var(--t-border)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             {t('stopwatch.reset')}
           </button>
@@ -67,7 +67,7 @@ export default function StopwatchModal({
             onClick={running ? onPause : onStart}
             className={`flex-1 py-3.5 rounded-2xl font-semibold transition-all active:scale-95 ${
               running
-                ? 'bg-[#1F1F1F] text-white hover:bg-[#2A2A2A]'
+                ? 'bg-[var(--t-border)] text-[var(--t-text)] hover:bg-[var(--t-border2)]'
                 : 'bg-[#FF5722] text-white hover:bg-[#FF6D3A] shadow-lg shadow-[#FF5722]/30'
             }`}
           >

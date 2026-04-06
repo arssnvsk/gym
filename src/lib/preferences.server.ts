@@ -17,6 +17,7 @@ export async function getServerPreferences(): Promise<UserPreferences> {
     const s = data.settings as Record<string, unknown>;
     return {
       exerciseLayout: s.exerciseLayout === 'grid' ? 'grid' : 'list',
+      theme: s.theme === 'light' ? 'light' : s.theme === 'system' ? 'system' : 'dark',
     };
   } catch {
     return DEFAULT_PREFERENCES;

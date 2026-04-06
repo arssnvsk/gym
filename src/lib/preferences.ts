@@ -2,13 +2,16 @@ import { createClient } from '@/lib/supabase/client';
 import * as localDb from '@/lib/db';
 
 export type ExerciseLayout = 'list' | 'grid';
+export type AppTheme = 'dark' | 'light' | 'system';
 
 export interface UserPreferences {
   exerciseLayout: ExerciseLayout;
+  theme: AppTheme;
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   exerciseLayout: 'list',
+  theme: 'dark',
 };
 
 function parse(raw: unknown): UserPreferences {
@@ -16,6 +19,7 @@ function parse(raw: unknown): UserPreferences {
   const r = raw as Record<string, unknown>;
   return {
     exerciseLayout: r.exerciseLayout === 'grid' ? 'grid' : 'list',
+    theme: r.theme === 'light' ? 'light' : r.theme === 'system' ? 'system' : 'dark',
   };
 }
 

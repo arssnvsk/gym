@@ -17,14 +17,14 @@ export default function ExerciseCard({ exercise, lastSet, layout = 'list' }: Exe
     return (
       <Link
         href={`/exercise/${exercise.id}`}
-        className="block bg-[#141414] border border-[#1F1F1F] rounded-xl p-2.5 hover:border-[#FF5722]/50 hover:bg-[#1A1A1A] transition-all active:scale-95"
+        className="block bg-[var(--t-card)] border border-[var(--t-border)] rounded-xl p-2.5 hover:border-[#FF5722]/50 hover:bg-[var(--t-hover)] transition-all active:scale-95"
       >
         <span className="text-lg block mb-1.5">{exercise.icon}</span>
-        <h3 className="text-xs font-semibold text-white leading-tight mb-1">
+        <h3 className="text-xs font-semibold text-[var(--t-text)] leading-tight mb-1">
           {t(exercise.nameKey)}
         </h3>
         {lastSet ? (
-          <div className="flex items-center gap-1 text-[11px] text-[#555]">
+          <div className="flex items-center gap-1 text-[11px] text-[var(--t-faint)]">
             {lastSet.weight > 0 && (
               <><span className="text-[#FF5722] font-semibold">{lastSet.weight}</span><span>{t('home.kg')}</span><span>·</span></>
             )}
@@ -32,7 +32,7 @@ export default function ExerciseCard({ exercise, lastSet, layout = 'list' }: Exe
             <span>{t('home.lastReps')}</span>
           </div>
         ) : (
-          <span className="text-[11px] text-[#333]">{t('home.noData')}</span>
+          <span className="text-[11px] text-[var(--t-border3)]">{t('home.noData')}</span>
         )}
       </Link>
     );
@@ -41,21 +41,21 @@ export default function ExerciseCard({ exercise, lastSet, layout = 'list' }: Exe
   return (
     <Link
       href={`/exercise/${exercise.id}`}
-      className="flex items-center gap-3 bg-[#141414] border border-[#1F1F1F] rounded-xl px-3 py-2.5 hover:border-[#FF5722]/40 hover:bg-[#1A1A1A] transition-all active:scale-95"
+      className="flex items-center gap-3 bg-[var(--t-card)] border border-[var(--t-border)] rounded-xl px-3 py-2.5 hover:border-[#FF5722]/40 hover:bg-[var(--t-hover)] transition-all active:scale-95"
     >
       <span className="text-xl leading-none shrink-0">{exercise.icon}</span>
       <div className="min-w-0">
-        <h3 className="text-sm font-semibold text-white leading-tight truncate">
+        <h3 className="text-sm font-semibold text-[var(--t-text)] leading-tight truncate">
           {t(exercise.nameKey)}
         </h3>
         {lastSet ? (
-          <div className="flex items-center gap-1 text-xs text-[#555] mt-0.5">
+          <div className="flex items-center gap-1 text-xs text-[var(--t-faint)] mt-0.5">
             {lastSet.weight > 0 && <><span className="text-[#FF5722] font-semibold">{lastSet.weight}</span><span>{t('home.kg')}</span><span className="mx-0.5">·</span></>}
             <span>{lastSet.reps}</span>
             <span>{t('home.lastReps')}</span>
           </div>
         ) : (
-          <span className="text-xs text-[#333] mt-0.5 block">{t('home.noData')}</span>
+          <span className="text-xs text-[var(--t-border3)] mt-0.5 block">{t('home.noData')}</span>
         )}
       </div>
     </Link>
