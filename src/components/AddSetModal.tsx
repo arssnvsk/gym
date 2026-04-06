@@ -12,9 +12,10 @@ interface AddSetModalProps {
   userId: string;
   defaultExerciseId?: string;
   existingSet?: WorkoutSet;
+  clientProfileId?: string | null;
 }
 
-export default function AddSetModal({ onClose, onSuccess, userId, defaultExerciseId, existingSet }: AddSetModalProps) {
+export default function AddSetModal({ onClose, onSuccess, userId, defaultExerciseId, existingSet, clientProfileId }: AddSetModalProps) {
   const t = useTranslations();
   const editMode = !!existingSet;
   const [exerciseId, setExerciseId] = useState(defaultExerciseId ?? '');
@@ -42,7 +43,7 @@ export default function AddSetModal({ onClose, onSuccess, userId, defaultExercis
           exercise_id: exerciseId,
           weight: parseFloat(weight),
           reps: parseInt(reps, 10),
-        }, userId);
+        }, userId, clientProfileId);
       }
       onSuccess();
       onClose();

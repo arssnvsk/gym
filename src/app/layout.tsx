@@ -5,6 +5,8 @@ import { getLocale, getMessages } from 'next-intl/server';
 import PWAProvider from '@/components/PWAProvider';
 import OfflineBanner from '@/components/OfflineBanner';
 import ThemeProvider from '@/components/ThemeProvider';
+import ClientProvider from '@/components/ClientProvider';
+import ClientBanner from '@/components/ClientBanner';
 import { getServerPreferences } from '@/lib/preferences.server';
 import './globals.css';
 
@@ -57,11 +59,13 @@ export default async function RootLayout({
       <body className={`${geist.variable} antialiased min-h-screen bg-[var(--t-bg)]`}>
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider initialTheme={theme}>
-            <PWAProvider />
-            <OfflineBanner />
-            <div className="max-w-[480px] mx-auto min-h-screen">
-              {children}
-            </div>
+            <ClientProvider>
+              <PWAProvider />
+              <OfflineBanner />
+              <div className="max-w-[480px] mx-auto min-h-screen">
+                {children}
+              </div>
+            </ClientProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

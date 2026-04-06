@@ -1,7 +1,7 @@
-import type { WorkoutSet } from '@/types';
+import type { WorkoutSet, ClientProfile } from '@/types';
 
 const DB_NAME = 'gymdb';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 export interface SyncQueueItem {
   key?: number;
@@ -37,6 +37,10 @@ function openDB(): Promise<IDBDatabase> {
       }
       if (oldVersion < 2) {
         db.createObjectStore('preferences');
+      }
+      if (oldVersion < 3) {
+        const cp = db.createObjectStore('client_profiles', { keyPath: 'id' });
+        cp.createIndex('by_user', 'user_id');
       }
     };
   });
@@ -164,6 +168,47 @@ export async function removeFromQueue(key: number): Promise<void> {
   return new Promise((resolve, reject) => {
     const tx = db.transaction('sync_queue', 'readwrite');
     tx.objectStore('sync_queue').delete(key);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(new Error('Transaction aborted'));
+  });
+}
+
+export async function getAllClientProfiles(userId: string): Promise<ClientProfile[]> {
+  if (!isAvailable()) return [];
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const req = db
+      .transaction('client_profiles', 'readonly')
+      .objectStore('client_profiles')
+      .index('by_user')
+      .getAll(IDBKeyRange.only(userId));
+    req.onsuccess = () => resolve(req.result as ClientProfile[]);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function getClientProfileById(id: string): Promise<ClientProfile | undefined> {
+  if (!isAvailable()) return undefined;
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const req = db.transaction('client_profiles', 'readonly').objectStore('client_profiles').get(id);
+    req.onsuccess = () => resolve(req.result as ClientProfile | undefined);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+export async function upsertClientProfile(profile: ClientProfile): Promise<void> {
+  return upsertClientProfiles([profile]);
+}
+
+export async function upsertClientProfiles(profiles: ClientProfile[]): Promise<void> {
+  if (!isAvailable() || profiles.length === 0) return;
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('client_profiles', 'readwrite');
+    const store = tx.objectStore('client_profiles');
+    profiles.forEach((p) => store.put(p));
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(new Error('Transaction aborted'));

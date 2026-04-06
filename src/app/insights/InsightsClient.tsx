@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import * as localDb from '@/lib/db';
 import { computeInsights, type Insight, type InsightSeverity } from '@/lib/insights';
+import { useClient } from '@/components/ClientProvider';
+import ClientBanner from '@/components/ClientBanner';
 import type { WorkoutSet } from '@/types';
 
 // ── severity config ─────────────────────────────────────────────────────────
@@ -115,17 +117,23 @@ function InsightCard({ insight }: { insight: Insight }) {
 
 // ── data loading ─────────────────────────────────────────────────────────────
 
-async function loadSetsCached(userId: string): Promise<WorkoutSet[]> {
+async function loadSetsCached(userId: string, clientProfileId: string | null): Promise<WorkoutSet[]> {
   const sets = await localDb.getAllSetsByUser(userId);
-  return sets.sort((a, b) => a.created_at.localeCompare(b.created_at));
+  const filtered = clientProfileId
+    ? sets.filter(s => s.client_profile_id === clientProfileId)
+    : sets.filter(s => !s.client_profile_id);
+  return filtered.sort((a, b) => a.created_at.localeCompare(b.created_at));
 }
 
-async function loadSetsFromSupabase(): Promise<WorkoutSet[]> {
+async function loadSetsFromSupabase(clientProfileId: string | null): Promise<WorkoutSet[]> {
   const supabase = createClient();
-  const { data, error } = await supabase
-    .from('sets')
-    .select('*')
-    .order('created_at', { ascending: true });
+  let query = supabase.from('sets').select('*').order('created_at', { ascending: true });
+  if (clientProfileId) {
+    query = query.eq('client_profile_id', clientProfileId);
+  } else {
+    query = query.is('client_profile_id', null);
+  }
+  const { data, error } = await query;
   if (error || !data) throw new Error('fetch failed');
   await localDb.upsertSets(data);
   return data;
@@ -135,19 +143,19 @@ async function loadSetsFromSupabase(): Promise<WorkoutSet[]> {
 
 export default function InsightsClient() {
   const router = useRouter();
+  const { activeClient } = useClient();
+  const clientProfileId = activeClient?.id ?? null;
   const [insights, setInsights] = useState<Insight[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { router.replace('/login'); return; }
       const uid = session.user.id;
-      setUserId(uid);
 
       // IndexedDB first — instant
-      loadSetsCached(uid).then(sets => {
+      loadSetsCached(uid, clientProfileId).then(sets => {
         if (sets.length > 0) {
           setInsights(computeInsights(sets));
           setLoading(false);
@@ -155,11 +163,11 @@ export default function InsightsClient() {
       });
 
       // Supabase refresh silently
-      loadSetsFromSupabase()
+      loadSetsFromSupabase(clientProfileId)
         .then(sets => { setInsights(computeInsights(sets)); setLoading(false); })
         .catch(() => setLoading(false));
     });
-  }, [router]);
+  }, [router, clientProfileId]);
 
   // Severity counts for summary chips
   const counts = {
@@ -182,6 +190,7 @@ export default function InsightsClient() {
           </Link>
           <span className="text-[var(--t-text)] font-semibold">Советы</span>
         </div>
+        <ClientBanner />
       </div>
 
       {/* Loading */}

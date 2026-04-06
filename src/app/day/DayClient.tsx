@@ -14,6 +14,8 @@ import {
   type DayTrend,
   type ExerciseTrend,
 } from '@/lib/day';
+import { useClient } from '@/components/ClientProvider';
+import ClientBanner from '@/components/ClientBanner';
 
 function getTodayDate(): string {
   const now = new Date();
@@ -112,6 +114,8 @@ function TrendBadge({ trend, changePercent }: { trend: ExerciseTrend; changePerc
 export default function DayClient() {
   const router = useRouter();
   const t = useTranslations();
+  const { activeClient } = useClient();
+  const clientProfileId = activeClient?.id ?? null;
   const today = getTodayDate();
 
   const [selectedDate, setSelectedDate] = useState(today);
@@ -123,11 +127,11 @@ export default function DayClient() {
 
   // Load available dates from IndexedDB on mount
   useEffect(() => {
-    getWorkoutDatesCached().then(dates => {
+    getWorkoutDatesCached(clientProfileId).then(dates => {
       setAvailableDates(dates);
       // If today has no data but there are past dates, stay on today (empty state will show)
     });
-  }, []);
+  }, [clientProfileId]);
 
   // Auth check — runs once
   useEffect(() => {
@@ -143,7 +147,7 @@ export default function DayClient() {
     setStats(null);
 
     // Show IndexedDB data immediately
-    getDayStatsCached(selectedDate).then(cached => {
+    getDayStatsCached(selectedDate, clientProfileId).then(cached => {
       if (cached) {
         setStats(cached);
         setLoading(false);
@@ -151,15 +155,15 @@ export default function DayClient() {
     });
 
     // Refresh from Supabase silently
-    getDayStats(selectedDate)
+    getDayStats(selectedDate, clientProfileId)
       .then(fresh => {
         setStats(fresh);
         setLoading(false);
         // After Supabase fetch, refresh available dates (new dates might have appeared)
-        getWorkoutDatesCached().then(setAvailableDates);
+        getWorkoutDatesCached(clientProfileId).then(setAvailableDates);
       })
       .catch(() => setLoading(false));
-  }, [selectedDate]);
+  }, [selectedDate, clientProfileId]);
 
   // Scroll selected chip into view
   useEffect(() => {
@@ -212,6 +216,7 @@ export default function DayClient() {
             ))}
           </div>
         )}
+        <ClientBanner />
       </div>
 
       {/* Loading */}

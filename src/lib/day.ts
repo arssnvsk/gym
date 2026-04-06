@@ -162,20 +162,26 @@ export function computeStreak(sortedDatesNewestFirst: string[]): number {
   return streak;
 }
 
-export async function getStreakCached(): Promise<number> {
-  const dates = await getWorkoutDatesCached();
+function filterByClient(sets: WorkoutSet[], clientProfileId?: string | null): WorkoutSet[] {
+  if (clientProfileId) return sets.filter(s => s.client_profile_id === clientProfileId);
+  return sets.filter(s => !s.client_profile_id);
+}
+
+export async function getStreakCached(clientProfileId?: string | null): Promise<number> {
+  const dates = await getWorkoutDatesCached(clientProfileId);
   return computeStreak(dates);
 }
 
 /** Returns unique workout dates sorted newest-first, from IndexedDB only. */
-export async function getWorkoutDatesCached(): Promise<string[]> {
+export async function getWorkoutDatesCached(clientProfileId?: string | null): Promise<string[]> {
   try {
     const supabase = createClient();
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) return [];
 
     const allSets = await localDb.getAllSetsByUser(session.user.id);
-    const dates = new Set(allSets.map(s => s.created_at.slice(0, 10)));
+    const filtered = filterByClient(allSets, clientProfileId);
+    const dates = new Set(filtered.map(s => s.created_at.slice(0, 10)));
     return Array.from(dates).sort((a, b) => b.localeCompare(a));
   } catch {
     return [];
@@ -183,30 +189,34 @@ export async function getWorkoutDatesCached(): Promise<string[]> {
 }
 
 /** IndexedDB only — no network, instant. Use for stale-while-revalidate. */
-export async function getDayStatsCached(date: string): Promise<DayStats | null> {
+export async function getDayStatsCached(date: string, clientProfileId?: string | null): Promise<DayStats | null> {
   try {
     const supabase = createClient();
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) return null;
 
     const allSets = await localDb.getAllSetsByUser(session.user.id);
-    return computeDayStats(allSets, date);
+    const filtered = filterByClient(allSets, clientProfileId);
+    return computeDayStats(filtered, date);
   } catch {
     return null;
   }
 }
 
 /** Fetches from Supabase and updates IndexedDB cache. Falls back to IndexedDB. */
-export async function getDayStats(date: string): Promise<DayStats | null> {
+export async function getDayStats(date: string, clientProfileId?: string | null): Promise<DayStats | null> {
   const supabase = createClient();
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user?.id) return null;
 
   try {
-    const { data, error } = await supabase
-      .from('sets')
-      .select('*')
-      .order('created_at', { ascending: true });
+    let query = supabase.from('sets').select('*').order('created_at', { ascending: true });
+    if (clientProfileId) {
+      query = query.eq('client_profile_id', clientProfileId);
+    } else {
+      query = query.is('client_profile_id', null);
+    }
+    const { data, error } = await query;
 
     if (!error && data) {
       await localDb.upsertSets(data);
@@ -218,7 +228,8 @@ export async function getDayStats(date: string): Promise<DayStats | null> {
 
   try {
     const allSets = await localDb.getAllSetsByUser(session.user.id);
-    return computeDayStats(allSets, date);
+    const filtered = filterByClient(allSets, clientProfileId);
+    return computeDayStats(filtered, date);
   } catch {
     return null;
   }

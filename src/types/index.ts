@@ -20,6 +20,7 @@ export interface WorkoutSet {
   reps: number;
   weight: number;
   created_at: string;
+  client_profile_id?: string | null;
 }
 
 export interface SetInput {
@@ -31,4 +32,12 @@ export interface SetInput {
 export interface ChartPoint {
   date: string;
   value: number;
+}
+
+export interface ClientProfile {
+  id: string;
+  user_id: string; // trainer
+  name: string;
+  is_active: boolean;
+  created_at: string;
 }

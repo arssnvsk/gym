@@ -9,6 +9,8 @@ import { createClient } from '@/lib/supabase/client';
 import ProgressChart from '@/components/ProgressChart';
 import AddSetModal from '@/components/AddSetModal';
 import MuscleMap from '@/components/MuscleMap';
+import { useClient } from '@/components/ClientProvider';
+import ClientBanner from '@/components/ClientBanner';
 
 interface ExerciseClientProps {
   exercise: Exercise;
@@ -17,6 +19,8 @@ interface ExerciseClientProps {
 export default function ExerciseClient({ exercise }: ExerciseClientProps) {
   const t = useTranslations();
   const router = useRouter();
+  const { activeClient } = useClient();
+  const clientProfileId = activeClient?.id ?? null;
   const [userId, setUserId] = useState<string | null>(null);
   const [sets, setSets] = useState<WorkoutSet[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +32,7 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
 
   const loadSets = useCallback(async () => {
     // Show cached data from IndexedDB immediately — no skeleton needed
-    const cached = await getSetsByExerciseCached(exercise.id);
+    const cached = await getSetsByExerciseCached(exercise.id, clientProfileId);
     if (cached.length > 0) {
       setSets(cached);
       setLoading(false);
@@ -36,12 +40,12 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
 
     // Refresh from Supabase silently in background
     try {
-      const fresh = await getSetsByExercise(exercise.id);
+      const fresh = await getSetsByExercise(exercise.id, clientProfileId);
       setSets(fresh);
     } finally {
       setLoading(false);
     }
-  }, [exercise.id]);
+  }, [exercise.id, clientProfileId]);
 
   useEffect(() => {
     // Auth check reads from localStorage — instant, no network needed
@@ -137,15 +141,18 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
-      <header className="sticky top-0 z-10 flex items-center gap-3 px-4 py-1 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] active:bg-[var(--t-overlay)] transition-colors text-sm font-medium"
-        >
-          <span className="text-lg leading-none">‹</span>
-          <span>{t('exercise.backToHome')}</span>
-        </button>
-      </header>
+      <div className="sticky top-0 z-10">
+        <header className="flex items-center gap-3 px-4 py-1 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] active:bg-[var(--t-overlay)] transition-colors text-sm font-medium"
+          >
+            <span className="text-lg leading-none">‹</span>
+            <span>{t('exercise.backToHome')}</span>
+          </button>
+        </header>
+        <ClientBanner />
+      </div>
 
       <main className="flex-1 px-4 py-5 pb-28 space-y-5">
         {/* Title */}
@@ -337,6 +344,7 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
           onSuccess={loadSets}
           userId={userId}
           defaultExerciseId={exercise.id}
+          clientProfileId={clientProfileId}
         />
       )}
 
@@ -346,6 +354,7 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
           onSuccess={loadSets}
           userId={userId}
           existingSet={editingSet}
+          clientProfileId={clientProfileId}
         />
       )}
     </div>

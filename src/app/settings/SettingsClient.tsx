@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { updatePreferences, type UserPreferences, type ExerciseLayout, type AppTheme } from '@/lib/preferences';
 import { useTheme } from '@/components/ThemeProvider';
+import ClientBanner from '@/components/ClientBanner';
 
 function ListPreview() {
   return (
@@ -82,16 +83,19 @@ export default function SettingsClient({ initialPreferences }: { initialPreferen
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="sticky top-0 z-10 flex items-center gap-2 px-4 py-1 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] active:bg-[var(--t-overlay)] transition-colors text-sm font-medium"
-        >
-          <span className="text-lg leading-none">‹</span>
-          <span>Назад</span>
-        </button>
-        <span className="text-[var(--t-text)] font-semibold">Настройки</span>
-      </header>
+      <div className="sticky top-0 z-10">
+        <header className="flex items-center gap-2 px-4 py-1 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] active:bg-[var(--t-overlay)] transition-colors text-sm font-medium"
+          >
+            <span className="text-lg leading-none">‹</span>
+            <span>Назад</span>
+          </button>
+          <span className="text-[var(--t-text)] font-semibold">Настройки</span>
+        </header>
+        <ClientBanner />
+      </div>
 
       <main className="flex-1 px-4 py-5 space-y-6">
 

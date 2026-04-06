@@ -70,7 +70,7 @@ export async function updateSet(id: string, data: Pick<SetInput, 'weight' | 'rep
   return updated;
 }
 
-export async function addSet(input: SetInput, userId: string): Promise<WorkoutSet> {
+export async function addSet(input: SetInput, userId: string, clientProfileId?: string | null): Promise<WorkoutSet> {
   // Generate UUID client-side so it stays consistent between local and server
   const id = generateId();
   const localSet: WorkoutSet = {
@@ -80,6 +80,7 @@ export async function addSet(input: SetInput, userId: string): Promise<WorkoutSe
     reps: input.reps,
     weight: input.weight,
     created_at: new Date().toISOString(),
+    client_profile_id: clientProfileId ?? null,
   };
 
   await localDb.upsertSet(localSet);
@@ -105,37 +106,50 @@ export async function addSet(input: SetInput, userId: string): Promise<WorkoutSe
   return data;
 }
 
-/** IndexedDB only — no network, instant. Use for stale-while-revalidate. */
-export async function getSetsByExerciseCached(exerciseId: string): Promise<WorkoutSet[]> {
-  const userId = await getCurrentUserId();
-  if (!userId) return [];
-  const cached = await localDb.getSetsByExercise(userId, exerciseId);
-  return cached.sort((a, b) => a.created_at.localeCompare(b.created_at));
+function filterByClient(sets: WorkoutSet[], clientProfileId?: string | null): WorkoutSet[] {
+  if (clientProfileId) return sets.filter(s => s.client_profile_id === clientProfileId);
+  return sets.filter(s => !s.client_profile_id);
 }
 
 /** IndexedDB only — no network, instant. Use for stale-while-revalidate. */
-export async function getLastSetPerExerciseCached(): Promise<Record<string, WorkoutSet>> {
+export async function getSetsByExerciseCached(exerciseId: string, clientProfileId?: string | null): Promise<WorkoutSet[]> {
+  const userId = await getCurrentUserId();
+  if (!userId) return [];
+  const cached = await localDb.getSetsByExercise(userId, exerciseId);
+  return filterByClient(cached, clientProfileId).sort((a, b) => a.created_at.localeCompare(b.created_at));
+}
+
+/** IndexedDB only — no network, instant. Use for stale-while-revalidate. */
+export async function getLastSetPerExerciseCached(clientProfileId?: string | null): Promise<Record<string, WorkoutSet>> {
   const userId = await getCurrentUserId();
   if (!userId) return {};
   const allSets = await localDb.getAllSetsByUser(userId);
-  allSets.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const filtered = filterByClient(allSets, clientProfileId);
+  filtered.sort((a, b) => b.created_at.localeCompare(a.created_at));
   const result: Record<string, WorkoutSet> = {};
-  for (const set of allSets) {
+  for (const set of filtered) {
     if (!result[set.exercise_id]) result[set.exercise_id] = set;
   }
   return result;
 }
 
-export async function getSetsByExercise(exerciseId: string): Promise<WorkoutSet[]> {
+export async function getSetsByExercise(exerciseId: string, clientProfileId?: string | null): Promise<WorkoutSet[]> {
   const supabase = createClient();
 
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('sets')
       .select('*')
       .eq('exercise_id', exerciseId)
       .order('created_at', { ascending: true });
 
+    if (clientProfileId) {
+      query = query.eq('client_profile_id', clientProfileId);
+    } else {
+      query = query.is('client_profile_id', null);
+    }
+
+    const { data, error } = await query;
     if (!error && data) {
       await localDb.upsertSets(data);
       return data;
@@ -147,18 +161,25 @@ export async function getSetsByExercise(exerciseId: string): Promise<WorkoutSet[
   const userId = await getCurrentUserId();
   if (!userId) return [];
   const cached = await localDb.getSetsByExercise(userId, exerciseId);
-  return cached.sort((a, b) => a.created_at.localeCompare(b.created_at));
+  return filterByClient(cached, clientProfileId).sort((a, b) => a.created_at.localeCompare(b.created_at));
 }
 
-export async function getLastSetPerExercise(): Promise<Record<string, WorkoutSet>> {
+export async function getLastSetPerExercise(clientProfileId?: string | null): Promise<Record<string, WorkoutSet>> {
   const supabase = createClient();
 
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('sets')
       .select('*')
       .order('created_at', { ascending: false });
 
+    if (clientProfileId) {
+      query = query.eq('client_profile_id', clientProfileId);
+    } else {
+      query = query.is('client_profile_id', null);
+    }
+
+    const { data, error } = await query;
     if (!error && data) {
       await localDb.upsertSets(data);
       const result: Record<string, WorkoutSet> = {};
@@ -174,9 +195,10 @@ export async function getLastSetPerExercise(): Promise<Record<string, WorkoutSet
   const userId = await getCurrentUserId();
   if (!userId) return {};
   const allSets = await localDb.getAllSetsByUser(userId);
-  allSets.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const filtered = filterByClient(allSets, clientProfileId);
+  filtered.sort((a, b) => b.created_at.localeCompare(a.created_at));
   const result: Record<string, WorkoutSet> = {};
-  for (const set of allSets) {
+  for (const set of filtered) {
     if (!result[set.exercise_id]) result[set.exercise_id] = set;
   }
   return result;

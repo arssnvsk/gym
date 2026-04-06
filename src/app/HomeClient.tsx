@@ -15,6 +15,7 @@ import { getLastSetPerExercise, getLastSetPerExerciseCached } from '@/lib/sets';
 import { getStreakCached, getDayStatsCached, type DayStats, type ExerciseTrend } from '@/lib/day';
 import { type UserPreferences } from '@/lib/preferences';
 import { type ReadinessInfo } from '@/lib/insights';
+import { useClient } from '@/components/ClientProvider';
 import type { WorkoutSet } from '@/types';
 
 function pluralWorkouts(n: number): string {
@@ -82,6 +83,8 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
 }) {
   const t = useTranslations();
   const router = useRouter();
+  const { activeClient } = useClient();
+  const clientProfileId = activeClient?.id ?? null;
   const [user, setUser] = useState<User | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [lastSets, setLastSets] = useState<Record<string, WorkoutSet>>({});
@@ -141,21 +144,21 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
     const today = getTodayDate();
 
     // Show cached data from IndexedDB immediately — no network needed
-    const cached = await getLastSetPerExerciseCached();
+    const cached = await getLastSetPerExerciseCached(clientProfileId);
     setLastSets(cached);
-    getStreakCached().then(setStreak);
-    getDayStatsCached(today).then(setTodayStats);
+    getStreakCached(clientProfileId).then(setStreak);
+    getDayStatsCached(today, clientProfileId).then(setTodayStats);
 
     // Refresh from Supabase silently in background
     try {
-      const fresh = await getLastSetPerExercise(); // also upserts to IndexedDB
+      const fresh = await getLastSetPerExercise(clientProfileId); // also upserts to IndexedDB
       setLastSets(fresh);
-      getStreakCached().then(setStreak);
-      getDayStatsCached(today).then(setTodayStats); // re-read after IndexedDB is fresh
+      getStreakCached(clientProfileId).then(setStreak);
+      getDayStatsCached(today, clientProfileId).then(setTodayStats); // re-read after IndexedDB is fresh
     } catch {
       // silently fail — cached data is already shown
     }
-  }, []);
+  }, [clientProfileId]);
 
   useEffect(() => {
     // Auth check reads from localStorage — no network, instant
@@ -271,8 +274,8 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
           </section>
         )}
 
-        {/* На сегодня */}
-        {suggestedExercises.length > 0 && (
+        {/* На сегодня — только для тренера (рекомендации основаны на его данных) */}
+        {suggestedExercises.length > 0 && !clientProfileId && (
           <section className="mb-2">
             <div className="flex items-center justify-between py-2 mb-1">
               <span className="text-xs font-semibold text-[var(--t-faint)] uppercase tracking-wider">На сегодня</span>
@@ -360,6 +363,7 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
           onClose={() => setShowModal(false)}
           onSuccess={loadLastSets}
           userId={user.id}
+          clientProfileId={clientProfileId}
         />
       )}
 

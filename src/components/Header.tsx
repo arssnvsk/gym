@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import ClientBanner from '@/components/ClientBanner';
 import type { User } from '@supabase/supabase-js';
 
 interface HeaderProps {
@@ -54,7 +55,8 @@ export default function Header({ user }: HeaderProps) {
   const avatarUrl = user?.user_metadata?.avatar_url as string | undefined;
 
   return (
-    <header className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
+    <div className="sticky top-0 z-10">
+    <header className="flex items-center justify-between px-4 py-3 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
       <div className="flex items-center gap-2">
         {/* Burger menu */}
         <div className="relative" ref={menuRef}>
@@ -86,6 +88,14 @@ export default function Header({ user }: HeaderProps) {
               >
                 <span className="text-lg leading-none">💡</span>
                 <span className="font-medium">Советы</span>
+              </button>
+              <div className="h-px bg-[var(--t-border2)]" />
+              <button
+                onClick={() => navigate('/clients')}
+                className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-[var(--t-text)] hover:bg-[var(--t-overlay)] active:bg-[var(--t-overlay-md)] transition-colors"
+              >
+                <span className="text-lg leading-none">👥</span>
+                <span className="font-medium">Клиенты</span>
               </button>
               <div className="h-px bg-[var(--t-border2)]" />
               <button
@@ -129,5 +139,7 @@ export default function Header({ user }: HeaderProps) {
         </div>
       )}
     </header>
+    <ClientBanner />
+    </div>
   );
 }
