@@ -76,10 +76,11 @@ function formatTimeShort(ms: number) {
 }
 
 
-export default function HomeClient({ initialPreferences, initialStreak, initialReadiness }: {
+export default function HomeClient({ initialPreferences, initialStreak, initialReadiness, initialTodayStats }: {
   initialPreferences: UserPreferences;
   initialStreak: number;
   initialReadiness: ReadinessInfo | null;
+  initialTodayStats: DayStats | null;
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -91,7 +92,7 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
   const [query, setQuery] = useState('');
   const [streak, setStreak] = useState(initialStreak);
   const [streakInfoOpen, setStreakInfoOpen] = useState(false);
-  const [todayStats, setTodayStats] = useState<DayStats | null>(null);
+  const [todayStats, setTodayStats] = useState<DayStats | null>(initialTodayStats);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(CATEGORY_ORDER));
   const [layout] = useState(initialPreferences.exerciseLayout);
 

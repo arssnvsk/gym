@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { computeStreak } from './day';
+import { computeStreak, computeDayStats, type DayStats } from './day';
 import { computeReadiness, type ReadinessInfo } from './insights';
 
 async function fetchAllSets() {
@@ -27,6 +27,16 @@ export async function getReadinessServer(): Promise<ReadinessInfo | null> {
     const data = await fetchAllSets();
     if (!data || data.length === 0) return null;
     return computeReadiness(data);
+  } catch {
+    return null;
+  }
+}
+
+export async function getDayStatsServer(date: string): Promise<DayStats | null> {
+  try {
+    const data = await fetchAllSets();
+    if (!data || data.length === 0) return null;
+    return computeDayStats(data, date);
   } catch {
     return null;
   }

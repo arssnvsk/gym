@@ -43,7 +43,7 @@ function calcTrend(todayVol: number, prevVol: number): ExerciseTrend {
 }
 
 /** Pure computation — no I/O, works on any array of sets */
-function computeDayStats(allSets: WorkoutSet[], date: string): DayStats | null {
+export function computeDayStats(allSets: WorkoutSet[], date: string): DayStats | null {
   const todaySets = allSets.filter(s => s.created_at.slice(0, 10) === date);
   if (todaySets.length === 0) return null;
 

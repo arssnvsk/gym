@@ -1,12 +1,30 @@
 import HomeClient from './HomeClient';
 import { getServerPreferences } from '@/lib/preferences.server';
-import { getStreakServer, getReadinessServer } from '@/lib/day.server';
+import { getStreakServer, getReadinessServer, getDayStatsServer } from '@/lib/day.server';
+
+function getTodayDate(): string {
+  const now = new Date();
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, '0'),
+    String(now.getDate()).padStart(2, '0'),
+  ].join('-');
+}
 
 export default async function HomePage() {
-  const [preferences, streak, readiness] = await Promise.all([
+  const today = getTodayDate();
+  const [preferences, streak, readiness, todayStats] = await Promise.all([
     getServerPreferences(),
     getStreakServer(),
     getReadinessServer(),
+    getDayStatsServer(today),
   ]);
-  return <HomeClient initialPreferences={preferences} initialStreak={streak} initialReadiness={readiness} />;
+  return (
+    <HomeClient
+      initialPreferences={preferences}
+      initialStreak={streak}
+      initialReadiness={readiness}
+      initialTodayStats={todayStats}
+    />
+  );
 }
