@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   title: 'Тренировки',
   description: 'Следи за прогрессом в тренажёрном зале',
   manifest: '/manifest.json',
+  icons: {
+    icon: { url: '/icon.svg', type: 'image/svg+xml' },
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
