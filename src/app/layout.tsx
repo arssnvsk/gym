@@ -6,8 +6,8 @@ import PWAProvider from '@/components/PWAProvider';
 import OfflineBanner from '@/components/OfflineBanner';
 import ThemeProvider from '@/components/ThemeProvider';
 import ClientProvider from '@/components/ClientProvider';
-import ClientBanner from '@/components/ClientBanner';
 import { getServerPreferences } from '@/lib/preferences.server';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 
 const geist = Geist({
@@ -68,6 +68,7 @@ export default async function RootLayout({
             </ClientProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
