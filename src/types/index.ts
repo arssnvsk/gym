@@ -41,3 +41,12 @@ export interface ClientProfile {
   is_active: boolean;
   created_at: string;
 }
+
+export interface ClientSession {
+  id: string;
+  user_id: string;
+  client_profile_id: string;
+  scheduled_at: string; // ISO 8601, stored as UTC
+  notes: string | null;
+  created_at: string;
+}

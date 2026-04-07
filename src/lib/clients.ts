@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/client';
 import {
   getAllClientProfiles,
-  upsertClientProfiles,
+  replaceClientProfiles,
   upsertClientProfile,
 } from '@/lib/db';
 import type { ClientProfile } from '@/types';
@@ -26,15 +26,22 @@ async function fetchClientsFromServer(userId: string): Promise<ClientProfile[]> 
 export async function getClientsCached(userId: string): Promise<ClientProfile[]> {
   const cached = await getAllClientProfiles(userId);
 
-  // Refresh in background
+  // Refresh in background — replace-sync removes deleted clients from IndexedDB
   fetchClientsFromServer(userId)
-    .then((fresh) => upsertClientProfiles(fresh))
+    .then((fresh) => replaceClientProfiles(userId, fresh))
     .catch(() => {});
 
   return cached.length > 0 ? cached : fetchClientsFromServer(userId).then((fresh) => {
-    upsertClientProfiles(fresh).catch(() => {});
+    replaceClientProfiles(userId, fresh).catch(() => {});
     return fresh;
   });
+}
+
+/** Force-fetch from Supabase and replace IndexedDB. Use when fresh data is critical (e.g. before saving sessions). */
+export async function refreshClients(userId: string): Promise<ClientProfile[]> {
+  const fresh = await fetchClientsFromServer(userId);
+  await replaceClientProfiles(userId, fresh);
+  return fresh;
 }
 
 export async function createClientProfile(userId: string, name: string): Promise<ClientProfile> {

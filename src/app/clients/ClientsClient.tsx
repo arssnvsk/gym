@@ -1,19 +1,42 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getClientsCached, createClientProfile, setClientStatus } from '@/lib/clients';
+import { getSessionsCached } from '@/lib/client-sessions';
 import { useClient } from '@/components/ClientProvider';
-import type { ClientProfile } from '@/types';
+import type { ClientProfile, ClientSession } from '@/types';
 
 interface Props {
   userId: string;
+}
+
+const MONTHS_SHORT = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const DOW_SHORT = ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+
+function fmtNextVisit(iso: string): string {
+  const d = new Date(iso);
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
+  const isSame = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+  const time = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  let dateStr: string;
+  if (isSame(d, today))     dateStr = 'Сегодня';
+  else if (isSame(d, tomorrow)) dateStr = 'Завтра';
+  else dateStr = `${DOW_SHORT[d.getDay()]}, ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
+  return `${dateStr}, ${time}`;
 }
 
 export default function ClientsClient({ userId }: Props) {
   const router = useRouter();
   const { setActiveClient } = useClient();
   const [clients, setClients] = useState<ClientProfile[]>([]);
+  const [nextVisit, setNextVisit] = useState<Map<string, ClientSession>>(new Map());
   const [loading, setLoading] = useState(true);
   const [addingName, setAddingName] = useState('');
   const [adding, setAdding] = useState(false);
@@ -24,6 +47,19 @@ export default function ClientsClient({ userId }: Props) {
     getClientsCached(userId).then((list) => {
       setClients(list);
       setLoading(false);
+    });
+
+    // Build next-visit map from cached sessions
+    getSessionsCached(userId).then((sessions) => {
+      const now = new Date();
+      const map = new Map<string, ClientSession>();
+      const sorted = [...sessions].sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
+      for (const s of sorted) {
+        if (new Date(s.scheduled_at) >= now && !map.has(s.client_profile_id)) {
+          map.set(s.client_profile_id, s);
+        }
+      }
+      setNextVisit(map);
     });
   }, [userId]);
 
@@ -56,6 +92,8 @@ export default function ClientsClient({ userId }: Props) {
 
   function ClientCard({ client }: { client: ClientProfile }) {
     const initials = client.name.slice(0, 2).toUpperCase();
+    const upcoming = nextVisit.get(client.id);
+
     return (
       <div className="flex items-center gap-3 px-4 py-3 bg-[var(--t-card)] border border-[var(--t-border)] rounded-2xl">
         <button
@@ -67,9 +105,15 @@ export default function ClientsClient({ userId }: Props) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium text-[var(--t-text)] truncate">{client.name}</div>
-            <div className="text-xs" style={{ color: 'var(--c-client-dot)' }}>
-              {client.is_active ? 'Тренирую' : 'Не тренирую'}
-            </div>
+            {upcoming ? (
+              <div className="text-xs text-[#FF5722] truncate">
+                {fmtNextVisit(upcoming.scheduled_at)}
+              </div>
+            ) : (
+              <div className="text-xs text-[var(--t-faint)]">
+                {client.is_active ? 'Нет записей' : 'Не тренирую'}
+              </div>
+            )}
           </div>
         </button>
         <button
@@ -92,7 +136,14 @@ export default function ClientsClient({ userId }: Props) {
         >
           ←
         </button>
-        <h1 className="text-lg font-bold text-[var(--t-text)]">Клиенты</h1>
+        <h1 className="text-lg font-bold text-[var(--t-text)] flex-1">Клиенты</h1>
+        <Link
+          href="/clients/calendar"
+          className="w-9 h-9 flex items-center justify-center rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] hover:bg-[var(--t-overlay)] transition-colors text-lg"
+          title="Календарь"
+        >
+          📅
+        </Link>
       </div>
 
       <div className="flex flex-col gap-4 px-4 py-4">
@@ -120,9 +171,7 @@ export default function ClientsClient({ userId }: Props) {
         {loading ? (
           <div className="text-sm text-[var(--t-muted)] text-center py-8">Загрузка...</div>
         ) : active.length === 0 ? (
-          <div className="text-sm text-[var(--t-muted)] text-center py-8">
-            Нет активных клиентов
-          </div>
+          <div className="text-sm text-[var(--t-muted)] text-center py-8">Нет активных клиентов</div>
         ) : (
           <div className="flex flex-col gap-2">
             {active.map((c) => <ClientCard key={c.id} client={c} />)}

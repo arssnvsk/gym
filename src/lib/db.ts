@@ -1,7 +1,7 @@
-import type { WorkoutSet, ClientProfile } from '@/types';
+import type { WorkoutSet, ClientProfile, ClientSession } from '@/types';
 
 const DB_NAME = 'gymdb';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 interface SyncQueueItem {
   key?: number;
@@ -41,6 +41,11 @@ function openDB(): Promise<IDBDatabase> {
       if (oldVersion < 3) {
         const cp = db.createObjectStore('client_profiles', { keyPath: 'id' });
         cp.createIndex('by_user', 'user_id');
+      }
+      if (oldVersion < 4) {
+        const cs = db.createObjectStore('client_sessions', { keyPath: 'id' });
+        cs.createIndex('by_user', 'user_id');
+        cs.createIndex('by_scheduled', 'scheduled_at');
       }
     };
   });
@@ -202,13 +207,106 @@ export async function upsertClientProfile(profile: ClientProfile): Promise<void>
   return upsertClientProfiles([profile]);
 }
 
-export async function upsertClientProfiles(profiles: ClientProfile[]): Promise<void> {
+async function upsertClientProfiles(profiles: ClientProfile[]): Promise<void> {
   if (!isAvailable() || profiles.length === 0) return;
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction('client_profiles', 'readwrite');
     const store = tx.objectStore('client_profiles');
     profiles.forEach((p) => store.put(p));
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(new Error('Transaction aborted'));
+  });
+}
+
+/** Replace all profiles for a user — removes stale (deleted) records then upserts fresh. */
+export async function replaceClientProfiles(userId: string, profiles: ClientProfile[]): Promise<void> {
+  if (!isAvailable()) return;
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('client_profiles', 'readwrite');
+    const store = tx.objectStore('client_profiles');
+    const fresh = new Set(profiles.map((p) => p.id));
+    const req = store.index('by_user').openCursor(IDBKeyRange.only(userId));
+    req.onsuccess = () => {
+      const cursor = req.result;
+      if (cursor) {
+        if (!fresh.has((cursor.value as ClientProfile).id)) cursor.delete();
+        cursor.continue();
+      } else {
+        profiles.forEach((p) => store.put(p));
+      }
+    };
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(new Error('Transaction aborted'));
+  });
+}
+
+// ── client_sessions ───────────────────────────────────────────────────────────
+
+export async function getAllSessionsByUser(userId: string): Promise<ClientSession[]> {
+  if (!isAvailable()) return [];
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const req = db
+      .transaction('client_sessions', 'readonly')
+      .objectStore('client_sessions')
+      .index('by_user')
+      .getAll(IDBKeyRange.only(userId));
+    req.onsuccess = () => resolve(req.result as ClientSession[]);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function upsertClientSessions(sessions: ClientSession[]): Promise<void> {
+  if (!isAvailable() || sessions.length === 0) return;
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('client_sessions', 'readwrite');
+    const store = tx.objectStore('client_sessions');
+    sessions.forEach((s) => store.put(s));
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(new Error('Transaction aborted'));
+  });
+}
+
+/** Replace all sessions for a user — removes stale (deleted) records then upserts fresh. */
+export async function replaceClientSessions(userId: string, sessions: ClientSession[]): Promise<void> {
+  if (!isAvailable()) return;
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('client_sessions', 'readwrite');
+    const store = tx.objectStore('client_sessions');
+    const fresh = new Set(sessions.map((s) => s.id));
+    const req = store.index('by_user').openCursor(IDBKeyRange.only(userId));
+    req.onsuccess = () => {
+      const cursor = req.result;
+      if (cursor) {
+        if (!fresh.has((cursor.value as ClientSession).id)) cursor.delete();
+        cursor.continue();
+      } else {
+        sessions.forEach((s) => store.put(s));
+      }
+    };
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(new Error('Transaction aborted'));
+  });
+}
+
+export async function upsertClientSession(session: ClientSession): Promise<void> {
+  return upsertClientSessions([session]);
+}
+
+export async function removeClientSession(id: string): Promise<void> {
+  if (!isAvailable()) return;
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('client_sessions', 'readwrite');
+    tx.objectStore('client_sessions').delete(id);
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(new Error('Transaction aborted'));
