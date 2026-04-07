@@ -188,7 +188,7 @@ export default function ClientsClient({ userId }: Props) {
       {/* Header */}
       <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/')}
           className="w-9 h-9 flex items-center justify-center rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] hover:bg-[var(--t-overlay)] transition-colors"
         >
           ←
