@@ -312,3 +312,55 @@ export async function removeClientSession(id: string): Promise<void> {
     tx.onabort = () => reject(new Error('Transaction aborted'));
   });
 }
+
+export async function removeClientProfileFromDB(id: string): Promise<void> {
+  if (!isAvailable()) return;
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('client_profiles', 'readwrite');
+    tx.objectStore('client_profiles').delete(id);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(new Error('Transaction aborted'));
+  });
+}
+
+export async function removeClientSessionsByClientId(userId: string, clientId: string): Promise<void> {
+  if (!isAvailable()) return;
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('client_sessions', 'readwrite');
+    const store = tx.objectStore('client_sessions');
+    const req = store.index('by_user').openCursor(IDBKeyRange.only(userId));
+    req.onsuccess = () => {
+      const cursor = req.result;
+      if (cursor) {
+        if ((cursor.value as ClientSession).client_profile_id === clientId) cursor.delete();
+        cursor.continue();
+      }
+    };
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(new Error('Transaction aborted'));
+  });
+}
+
+export async function removeSetsByClientId(userId: string, clientId: string): Promise<void> {
+  if (!isAvailable()) return;
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('sets', 'readwrite');
+    const store = tx.objectStore('sets');
+    const req = store.index('by_user').openCursor(IDBKeyRange.only(userId));
+    req.onsuccess = () => {
+      const cursor = req.result;
+      if (cursor) {
+        if ((cursor.value as WorkoutSet).client_profile_id === clientId) cursor.delete();
+        cursor.continue();
+      }
+    };
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(new Error('Transaction aborted'));
+  });
+}

@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getClientsCached, createClientProfile, setClientStatus } from '@/lib/clients';
-import { getSessionsCached } from '@/lib/client-sessions';
+import { getClientsCached, createClientProfile, setClientStatus, deleteClientProfile } from '@/lib/clients';
+import { getSessionsCached, refreshSessions } from '@/lib/client-sessions';
 import { useClient } from '@/components/ClientProvider';
 import type { ClientProfile, ClientSession } from '@/types';
 
@@ -41,26 +41,40 @@ export default function ClientsClient({ userId }: Props) {
   const [addingName, setAddingName] = useState('');
   const [adding, setAdding] = useState(false);
   const [showInactive, setShowInactive] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  function buildNextVisitMap(sessions: ClientSession[]): Map<string, ClientSession> {
+    const now = new Date();
+    const map = new Map<string, ClientSession>();
+    const sorted = [...sessions].sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
+    for (const s of sorted) {
+      if (new Date(s.scheduled_at) >= now && !map.has(s.client_profile_id)) {
+        map.set(s.client_profile_id, s);
+      }
+    }
+    return map;
+  }
+
   useEffect(() => {
-    getClientsCached(userId).then((list) => {
-      setClients(list);
-      setLoading(false);
+    let alive = true;
+
+    getClientsCached(userId, (fresh) => {
+      if (alive) setClients(fresh);
+    }).then((list) => {
+      if (alive) { setClients(list); setLoading(false); }
     });
 
-    // Build next-visit map from cached sessions
     getSessionsCached(userId).then((sessions) => {
-      const now = new Date();
-      const map = new Map<string, ClientSession>();
-      const sorted = [...sessions].sort((a, b) => a.scheduled_at.localeCompare(b.scheduled_at));
-      for (const s of sorted) {
-        if (new Date(s.scheduled_at) >= now && !map.has(s.client_profile_id)) {
-          map.set(s.client_profile_id, s);
-        }
-      }
-      setNextVisit(map);
+      if (alive) setNextVisit(buildNextVisitMap(sessions));
     });
+
+    refreshSessions(userId).then((sessions) => {
+      if (alive) setNextVisit(buildNextVisitMap(sessions));
+    }).catch(() => {});
+
+    return () => { alive = false; };
   }, [userId]);
 
   const active = clients.filter((c) => c.is_active);
@@ -81,8 +95,23 @@ export default function ClientsClient({ userId }: Props) {
 
   async function handleToggleStatus(client: ClientProfile) {
     const next = !client.is_active;
-    await setClientStatus(client.id, next);
+    await setClientStatus(client.id, userId, next);
     setClients((prev) => prev.map((c) => c.id === client.id ? { ...c, is_active: next } : c));
+    if (!next) {
+      setNextVisit((prev) => { const m = new Map(prev); m.delete(client.id); return m; });
+    }
+  }
+
+  async function handleDelete(client: ClientProfile) {
+    setDeleting(true);
+    try {
+      await deleteClientProfile(client.id, userId);
+      setClients((prev) => prev.filter((c) => c.id !== client.id));
+      setNextVisit((prev) => { const m = new Map(prev); m.delete(client.id); return m; });
+    } finally {
+      setDeleting(false);
+      setConfirmDeleteId(null);
+    }
   }
 
   function handleSelect(client: ClientProfile) {
@@ -116,12 +145,40 @@ export default function ClientsClient({ userId }: Props) {
             )}
           </div>
         </button>
-        <button
-          onClick={() => handleToggleStatus(client)}
-          className="shrink-0 text-xs px-3 py-1.5 rounded-lg border border-[var(--t-border2)] text-[var(--t-muted)] hover:text-[var(--t-text)] hover:border-[var(--t-border3)] transition-colors"
-        >
-          {client.is_active ? 'Пауза' : 'Вернуть'}
-        </button>
+        {confirmDeleteId === client.id ? (
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => handleDelete(client)}
+              disabled={deleting}
+              className="text-xs px-3 py-1.5 rounded-lg bg-red-600 text-white disabled:opacity-40 transition-opacity"
+            >
+              Удалить
+            </button>
+            <button
+              onClick={() => setConfirmDeleteId(null)}
+              disabled={deleting}
+              className="text-xs px-3 py-1.5 rounded-lg border border-[var(--t-border2)] text-[var(--t-muted)] hover:text-[var(--t-text)] transition-colors"
+            >
+              Отмена
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => handleToggleStatus(client)}
+              className="text-xs px-3 py-1.5 rounded-lg border border-[var(--t-border2)] text-[var(--t-muted)] hover:text-[var(--t-text)] hover:border-[var(--t-border3)] transition-colors"
+            >
+              {client.is_active ? 'Пауза' : 'Вернуть'}
+            </button>
+            <button
+              onClick={() => setConfirmDeleteId(client.id)}
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--t-muted)] hover:text-red-500 hover:bg-[var(--t-overlay)] transition-colors text-base"
+              title="Удалить клиента"
+            >
+              🗑
+            </button>
+          </div>
+        )}
       </div>
     );
   }
