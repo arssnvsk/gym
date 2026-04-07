@@ -3,7 +3,7 @@ import type { WorkoutSet, ClientProfile } from '@/types';
 const DB_NAME = 'gymdb';
 const DB_VERSION = 3;
 
-export interface SyncQueueItem {
+interface SyncQueueItem {
   key?: number;
   type: 'insert' | 'update' | 'delete';
   payload: unknown;

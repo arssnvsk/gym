@@ -68,7 +68,10 @@ Auth: Google OAuth via Supabase SSR.
 npm run dev    # local dev server
 npm run build  # production build
 npm run start  # start production server
+npm run knip   # check unused exports, files, dependencies
 ```
+
+> **After making code changes** always run `npm run knip` to ensure no unused exports or dependencies were introduced.
 
 ## Design Notes
 

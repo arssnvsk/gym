@@ -24,7 +24,7 @@ function parse(raw: unknown): UserPreferences {
 }
 
 /** IndexedDB only — instant, offline-safe */
-export async function getPreferencesCached(): Promise<UserPreferences> {
+async function getPreferencesCached(): Promise<UserPreferences> {
   try {
     const raw = await localDb.getPreferencesLocal();
     return parse(raw);

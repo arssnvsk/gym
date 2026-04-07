@@ -4,7 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 
 const SESSION_KEY = 'gym-active-client';
 
-export interface ActiveClient {
+interface ActiveClient {
   id: string;
   name: string;
 }
