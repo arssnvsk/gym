@@ -1,5 +1,4 @@
-import { EXERCISES } from '@/lib/exercises';
-import type { WorkoutSet, MuscleGroup } from '@/types';
+import type { WorkoutSet, Exercise, MuscleGroup } from '@/types';
 
 export type InsightSeverity = 'excellent' | 'good' | 'warning' | 'danger' | 'info';
 
@@ -75,14 +74,14 @@ export interface ReadinessInfo {
   fresh: MuscleGroup[];      // never trained
 }
 
-export function computeReadiness(allSets: WorkoutSet[]): ReadinessInfo {
+export function computeReadiness(allSets: WorkoutSet[], exercises: Exercise[]): ReadinessInfo {
   const today = getTodayStr();
   const sorted = [...allSets].sort((a, b) => a.created_at.localeCompare(b.created_at));
 
   const muscleLastTrained = new Map<MuscleGroup, string>();
   for (const s of sorted) {
     const d = s.created_at.slice(0, 10);
-    const ex = EXERCISES.find(e => e.id === s.exercise_id);
+    const ex = exercises.find(e => e.id === s.exercise_id);
     if (!ex) continue;
     for (const m of ex.muscles.primary) {
       if (!muscleLastTrained.has(m) || d > muscleLastTrained.get(m)!) {
@@ -106,7 +105,7 @@ export function computeReadiness(allSets: WorkoutSet[]): ReadinessInfo {
 
 // ── main function ──────────────────────────────────────────────────────────
 
-export function computeInsights(allSets: WorkoutSet[]): Insight[] {
+export function computeInsights(allSets: WorkoutSet[], exercises: Exercise[]): Insight[] {
   if (allSets.length === 0) return [];
 
   const today = getTodayStr();
@@ -262,7 +261,7 @@ export function computeInsights(allSets: WorkoutSet[]): Insight[] {
   if (sets28.length > 0) {
     const muscleVol = new Map<MuscleGroup, number>();
     for (const s of sets28) {
-      const ex = EXERCISES.find(e => e.id === s.exercise_id);
+      const ex = exercises.find(e => e.id === s.exercise_id);
       if (!ex) continue;
       const v = s.weight > 0 ? s.weight * s.reps : s.reps;
       for (const m of ex.muscles.primary) muscleVol.set(m, (muscleVol.get(m) ?? 0) + v);
@@ -321,7 +320,7 @@ export function computeInsights(allSets: WorkoutSet[]): Insight[] {
   {
     const trained30 = new Set<MuscleGroup>();
     for (const s of sorted.filter(s => s.created_at.slice(0, 10) >= start30)) {
-      const ex = EXERCISES.find(e => e.id === s.exercise_id);
+      const ex = exercises.find(e => e.id === s.exercise_id);
       if (ex) ex.muscles.primary.forEach(m => trained30.add(m));
     }
     const untrained = MAJOR_MUSCLES.filter(m => !trained30.has(m));
@@ -345,7 +344,7 @@ export function computeInsights(allSets: WorkoutSet[]): Insight[] {
     const muscleLastTrained = new Map<MuscleGroup, string>();
     for (const s of sorted) {
       const d = s.created_at.slice(0, 10);
-      const ex = EXERCISES.find(e => e.id === s.exercise_id);
+      const ex = exercises.find(e => e.id === s.exercise_id);
       if (!ex) continue;
       for (const m of ex.muscles.primary) {
         if (!muscleLastTrained.has(m) || d > muscleLastTrained.get(m)!) {
@@ -386,7 +385,7 @@ export function computeInsights(allSets: WorkoutSet[]): Insight[] {
   {
     const weekSets = new Map<MuscleGroup, number>();
     for (const s of sets7) {
-      const ex = EXERCISES.find(e => e.id === s.exercise_id);
+      const ex = exercises.find(e => e.id === s.exercise_id);
       if (!ex) continue;
       for (const m of ex.muscles.primary) weekSets.set(m, (weekSets.get(m) ?? 0) + 1);
     }

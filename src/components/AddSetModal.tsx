@@ -2,20 +2,20 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { EXERCISES } from '@/lib/exercises';
 import { addSet, updateSet } from '@/lib/sets';
-import type { WorkoutSet } from '@/types';
+import type { WorkoutSet, Exercise } from '@/types';
 
 interface AddSetModalProps {
   onClose: () => void;
   onSuccess: () => void;
   userId: string;
+  exercises: Exercise[];
   defaultExerciseId?: string;
   existingSet?: WorkoutSet;
   clientProfileId?: string | null;
 }
 
-export default function AddSetModal({ onClose, onSuccess, userId, defaultExerciseId, existingSet, clientProfileId }: AddSetModalProps) {
+export default function AddSetModal({ onClose, onSuccess, userId, exercises, defaultExerciseId, existingSet, clientProfileId }: AddSetModalProps) {
   const t = useTranslations();
   const editMode = !!existingSet;
   const [exerciseId, setExerciseId] = useState(defaultExerciseId ?? '');
@@ -86,9 +86,9 @@ export default function AddSetModal({ onClose, onSuccess, userId, defaultExercis
                 <option value="" disabled className="text-[var(--t-faint)]">
                   {t('addSet.selectExercise')}
                 </option>
-                {EXERCISES.map((ex) => (
+                {exercises.map((ex) => (
                   <option key={ex.id} value={ex.id}>
-                    {ex.icon} {t(ex.nameKey)}
+                    {ex.icon} {ex.name}
                   </option>
                 ))}
               </select>

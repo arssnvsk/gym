@@ -7,10 +7,12 @@ export type MuscleGroup =
 
 export interface Exercise {
   id: string;
-  nameKey: string; // i18n key
+  name: string;
   icon: string;
   category: 'chest' | 'legs' | 'back' | 'shoulders' | 'arms' | 'core';
   muscles: { primary: MuscleGroup[]; secondary: MuscleGroup[] };
+  is_custom: boolean;
+  user_id: string | null;
 }
 
 export interface WorkoutSet {

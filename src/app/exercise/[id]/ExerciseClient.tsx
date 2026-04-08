@@ -158,7 +158,7 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
         {/* Title */}
         <div className="flex items-center gap-3">
           <span className="text-3xl">{exercise.icon}</span>
-          <h1 className="text-xl font-bold text-[var(--t-text)]">{t(exercise.nameKey)}</h1>
+          <h1 className="text-xl font-bold text-[var(--t-text)]">{exercise.name}</h1>
         </div>
 
         {loading ? (
@@ -343,6 +343,7 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
           onClose={() => setShowModal(false)}
           onSuccess={loadSets}
           userId={userId}
+          exercises={[exercise]}
           defaultExerciseId={exercise.id}
           clientProfileId={clientProfileId}
         />
@@ -353,6 +354,7 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
           onClose={() => setEditingSet(null)}
           onSuccess={loadSets}
           userId={userId}
+          exercises={[exercise]}
           existingSet={editingSet}
           clientProfileId={clientProfileId}
         />

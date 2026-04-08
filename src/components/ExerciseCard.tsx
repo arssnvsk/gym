@@ -21,7 +21,7 @@ export default function ExerciseCard({ exercise, lastSet, layout = 'list' }: Exe
       >
         <span className="text-lg block mb-1.5">{exercise.icon}</span>
         <h3 className="text-xs font-semibold text-[var(--t-text)] leading-tight mb-1">
-          {t(exercise.nameKey)}
+          {exercise.name}
         </h3>
         {lastSet ? (
           <div className="flex items-center gap-1 text-[11px] text-[var(--t-faint)]">
@@ -46,7 +46,7 @@ export default function ExerciseCard({ exercise, lastSet, layout = 'list' }: Exe
       <span className="text-xl leading-none shrink-0">{exercise.icon}</span>
       <div className="min-w-0">
         <h3 className="text-sm font-semibold text-[var(--t-text)] leading-tight truncate">
-          {t(exercise.nameKey)}
+          {exercise.name}
         </h3>
         {lastSet ? (
           <div className="flex items-center gap-1 text-xs text-[var(--t-faint)] mt-0.5">

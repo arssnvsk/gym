@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+
 import { createClient } from '@/lib/supabase/client';
 import MuscleMap from '@/components/MuscleMap';
 import {
@@ -113,7 +113,6 @@ function TrendBadge({ trend, changePercent }: { trend: ExerciseTrend; changePerc
 
 export default function DayClient() {
   const router = useRouter();
-  const t = useTranslations();
   const { activeClient } = useClient();
   const clientProfileId = activeClient?.id ?? null;
   const today = getTodayDate();
@@ -282,7 +281,7 @@ export default function DayClient() {
                     <div className="flex items-center gap-2">
                       <span className="text-lg leading-none shrink-0">{stat.exercise.icon}</span>
                       <span className="text-sm font-medium text-[var(--t-text)] truncate">
-                        {t(stat.exercise.nameKey)}
+                        {stat.exercise.name}
                       </span>
                     </div>
                     <div className="text-[11px] text-[var(--t-faint)] mt-0.5 ml-7">

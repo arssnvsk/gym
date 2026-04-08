@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { computeStreak, computeDayStats, type DayStats } from './day';
 import { computeReadiness, type ReadinessInfo } from './insights';
+import { getExercisesServer } from './exercises.server';
 
 async function fetchAllSets() {
   const supabase = await createClient();
@@ -24,9 +25,9 @@ export async function getStreakServer(): Promise<number> {
 
 export async function getReadinessServer(): Promise<ReadinessInfo | null> {
   try {
-    const data = await fetchAllSets();
+    const [data, exercises] = await Promise.all([fetchAllSets(), getExercisesServer()]);
     if (!data || data.length === 0) return null;
-    return computeReadiness(data);
+    return computeReadiness(data, exercises);
   } catch {
     return null;
   }
@@ -34,9 +35,9 @@ export async function getReadinessServer(): Promise<ReadinessInfo | null> {
 
 export async function getDayStatsServer(date: string): Promise<DayStats | null> {
   try {
-    const data = await fetchAllSets();
+    const [data, exercises] = await Promise.all([fetchAllSets(), getExercisesServer()]);
     if (!data || data.length === 0) return null;
-    return computeDayStats(data, date);
+    return computeDayStats(data, date, exercises);
   } catch {
     return null;
   }

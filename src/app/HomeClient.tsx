@@ -10,13 +10,13 @@ import Header from '@/components/Header';
 import ExerciseCard from '@/components/ExerciseCard';
 import AddSetModal from '@/components/AddSetModal';
 import StopwatchModal from '@/components/StopwatchModal';
-import { EXERCISES, CATEGORY_ORDER } from '@/lib/exercises';
+import { CATEGORY_ORDER } from '@/lib/exercises';
 import { getLastSetPerExercise, getLastSetPerExerciseCached } from '@/lib/sets';
 import { getStreakCached, getDayStatsCached, type DayStats, type ExerciseTrend } from '@/lib/day';
 import { type UserPreferences } from '@/lib/preferences';
 import { type ReadinessInfo } from '@/lib/insights';
 import { useClient } from '@/components/ClientProvider';
-import type { WorkoutSet } from '@/types';
+import type { WorkoutSet, Exercise } from '@/types';
 
 function pluralWorkouts(n: number): string {
   if (n % 10 === 1 && n % 100 !== 11) return 'тренировка';
@@ -76,11 +76,12 @@ function formatTimeShort(ms: number) {
 }
 
 
-export default function HomeClient({ initialPreferences, initialStreak, initialReadiness, initialTodayStats }: {
+export default function HomeClient({ initialPreferences, initialStreak, initialReadiness, initialTodayStats, initialExercises }: {
   initialPreferences: UserPreferences;
   initialStreak: number;
   initialReadiness: ReadinessInfo | null;
   initialTodayStats: DayStats | null;
+  initialExercises: Exercise[];
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -103,8 +104,8 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
     const seen = new Set<string>();
     const result = [];
     for (const muscle of muscles) {
-      const withHistory = EXERCISES.filter(ex => ex.muscles.primary.includes(muscle) && lastSets[ex.id]);
-      const withoutHistory = EXERCISES.filter(ex => ex.muscles.primary.includes(muscle) && !lastSets[ex.id]);
+      const withHistory = initialExercises.filter(ex => ex.muscles.primary.includes(muscle) && lastSets[ex.id]);
+      const withoutHistory = initialExercises.filter(ex => ex.muscles.primary.includes(muscle) && !lastSets[ex.id]);
       const pick = [...withHistory, ...withoutHistory].find(ex => !seen.has(ex.id));
       if (pick) { seen.add(pick.id); result.push(pick); }
       if (result.length >= 5) break;
@@ -178,8 +179,8 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
   const q = query.trim().toLowerCase();
   const grouped = CATEGORY_ORDER.map((cat) => ({
     category: cat,
-    exercises: EXERCISES.filter((ex) =>
-      ex.category === cat && (!q || t(ex.nameKey).toLowerCase().includes(q))
+    exercises: initialExercises.filter((ex) =>
+      ex.category === cat && (!q || ex.name.toLowerCase().includes(q))
     ),
   })).filter(({ exercises }) => exercises.length > 0);
 
@@ -259,7 +260,7 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
                   <div className="flex items-center gap-2 min-w-0">
                     <span className="text-lg leading-none shrink-0">{stat.exercise.icon}</span>
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-[var(--t-text)] truncate">{t(stat.exercise.nameKey)}</div>
+                      <div className="text-sm font-medium text-[var(--t-text)] truncate">{stat.exercise.name}</div>
                       <div className="text-[11px] text-[var(--t-faint)]">{stat.todaySets} {pluralSets(stat.todaySets)}</div>
                     </div>
                   </div>
@@ -364,6 +365,7 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
           onClose={() => setShowModal(false)}
           onSuccess={loadLastSets}
           userId={user.id}
+          exercises={initialExercises}
           clientProfileId={clientProfileId}
         />
       )}

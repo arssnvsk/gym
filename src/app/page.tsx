@@ -1,6 +1,7 @@
 import HomeClient from './HomeClient';
 import { getServerPreferences } from '@/lib/preferences.server';
 import { getStreakServer, getReadinessServer, getDayStatsServer } from '@/lib/day.server';
+import { getExercisesServer } from '@/lib/exercises.server';
 
 function getTodayDate(): string {
   const now = new Date();
@@ -13,11 +14,12 @@ function getTodayDate(): string {
 
 export default async function HomePage() {
   const today = getTodayDate();
-  const [preferences, streak, readiness, todayStats] = await Promise.all([
+  const [preferences, streak, readiness, todayStats, exercises] = await Promise.all([
     getServerPreferences(),
     getStreakServer(),
     getReadinessServer(),
     getDayStatsServer(today),
+    getExercisesServer(),
   ]);
   return (
     <HomeClient
@@ -25,6 +27,7 @@ export default async function HomePage() {
       initialStreak={streak}
       initialReadiness={readiness}
       initialTodayStats={todayStats}
+      initialExercises={exercises}
     />
   );
 }

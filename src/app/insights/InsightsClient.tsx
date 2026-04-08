@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import * as localDb from '@/lib/db';
 import { computeInsights, type Insight, type InsightSeverity } from '@/lib/insights';
+import { getExercises } from '@/lib/exercises';
 import { useClient } from '@/components/ClientProvider';
 import ClientBanner from '@/components/ClientBanner';
 import type { WorkoutSet } from '@/types';
@@ -154,18 +155,20 @@ export default function InsightsClient() {
       if (!session) { router.replace('/login'); return; }
       const uid = session.user.id;
 
-      // IndexedDB first — instant
-      loadSetsCached(uid, clientProfileId).then(sets => {
-        if (sets.length > 0) {
-          setInsights(computeInsights(sets));
-          setLoading(false);
-        }
-      });
+      getExercises().then(exercises => {
+        // IndexedDB first — instant
+        loadSetsCached(uid, clientProfileId).then(sets => {
+          if (sets.length > 0) {
+            setInsights(computeInsights(sets, exercises));
+            setLoading(false);
+          }
+        });
 
-      // Supabase refresh silently
-      loadSetsFromSupabase(clientProfileId)
-        .then(sets => { setInsights(computeInsights(sets)); setLoading(false); })
-        .catch(() => setLoading(false));
+        // Supabase refresh silently
+        loadSetsFromSupabase(clientProfileId)
+          .then(sets => { setInsights(computeInsights(sets, exercises)); setLoading(false); })
+          .catch(() => setLoading(false));
+      });
     });
   }, [router, clientProfileId]);
 

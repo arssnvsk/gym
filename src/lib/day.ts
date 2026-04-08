@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client';
 import * as localDb from '@/lib/db';
-import { EXERCISES } from '@/lib/exercises';
+import { getExercises } from '@/lib/exercises';
 import type { WorkoutSet, Exercise, MuscleGroup } from '@/types';
 
 export type ExerciseTrend = 'progress' | 'regression' | 'neutral' | 'new';
@@ -43,7 +43,7 @@ function calcTrend(todayVol: number, prevVol: number): ExerciseTrend {
 }
 
 /** Pure computation — no I/O, works on any array of sets */
-export function computeDayStats(allSets: WorkoutSet[], date: string): DayStats | null {
+export function computeDayStats(allSets: WorkoutSet[], date: string, exercises: Exercise[]): DayStats | null {
   const todaySets = allSets.filter(s => s.created_at.slice(0, 10) === date);
   if (todaySets.length === 0) return null;
 
@@ -60,7 +60,7 @@ export function computeDayStats(allSets: WorkoutSet[], date: string): DayStats |
   const allSecondaryMuscles = new Set<MuscleGroup>();
 
   for (const [exerciseId, sets] of byExercise) {
-    const exercise = EXERCISES.find(e => e.id === exerciseId);
+    const exercise = exercises.find(e => e.id === exerciseId);
     if (!exercise) continue;
 
     exercise.muscles.primary.forEach(m => allPrimaryMuscles.add(m));
@@ -195,9 +195,12 @@ export async function getDayStatsCached(date: string, clientProfileId?: string |
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) return null;
 
-    const allSets = await localDb.getAllSetsByUser(session.user.id);
+    const [allSets, exercises] = await Promise.all([
+      localDb.getAllSetsByUser(session.user.id),
+      getExercises(),
+    ]);
     const filtered = filterByClient(allSets, clientProfileId);
-    return computeDayStats(filtered, date);
+    return computeDayStats(filtered, date, exercises);
   } catch {
     return null;
   }
@@ -208,6 +211,8 @@ export async function getDayStats(date: string, clientProfileId?: string | null)
   const supabase = createClient();
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user?.id) return null;
+
+  const exercises = await getExercises();
 
   try {
     let query = supabase.from('sets').select('*').order('created_at', { ascending: true });
@@ -220,7 +225,7 @@ export async function getDayStats(date: string, clientProfileId?: string | null)
 
     if (!error && data) {
       await localDb.upsertSets(data);
-      return computeDayStats(data, date);
+      return computeDayStats(data, date, exercises);
     }
   } catch {
     // fall through to local cache
@@ -229,7 +234,7 @@ export async function getDayStats(date: string, clientProfileId?: string | null)
   try {
     const allSets = await localDb.getAllSetsByUser(session.user.id);
     const filtered = filterByClient(allSets, clientProfileId);
-    return computeDayStats(filtered, date);
+    return computeDayStats(filtered, date, exercises);
   } catch {
     return null;
   }
