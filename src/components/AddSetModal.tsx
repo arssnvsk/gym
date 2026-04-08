@@ -81,7 +81,7 @@ export default function AddSetModal({ onClose, onSuccess, userId, defaultExercis
                 value={exerciseId}
                 onChange={(e) => setExerciseId(e.target.value)}
                 required
-                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors appearance-none"
+                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] rounded-xl px-4 py-3 text-base focus:outline-none focus:border-[#FF5722] transition-colors appearance-none"
               >
                 <option value="" disabled className="text-[var(--t-faint)]">
                   {t('addSet.selectExercise')}
@@ -109,7 +109,7 @@ export default function AddSetModal({ onClose, onSuccess, userId, defaultExercis
                 min="0"
                 step="0.5"
                 placeholder="100"
-                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] rounded-xl px-4 py-3 text-base focus:outline-none focus:border-[#FF5722] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
             <div>
@@ -124,7 +124,7 @@ export default function AddSetModal({ onClose, onSuccess, userId, defaultExercis
                 min="1"
                 step="1"
                 placeholder="8"
-                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#FF5722] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-full bg-[var(--t-bg)] border border-[var(--t-border)] text-[var(--t-text)] rounded-xl px-4 py-3 text-base focus:outline-none focus:border-[#FF5722] transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
           </div>
