@@ -20,6 +20,7 @@ export async function getServerPreferences(): Promise<UserPreferences> {
       theme: s.theme === 'light' ? 'light' : s.theme === 'system' ? 'system' : 'dark',
       showNextSetRec: s.showNextSetRec === true,
       isTrainer: s.isTrainer === true,
+      onboardingDone: s.onboardingDone === true,
     };
   } catch {
     return DEFAULT_PREFERENCES;

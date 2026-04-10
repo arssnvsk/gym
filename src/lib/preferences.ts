@@ -9,6 +9,7 @@ export interface UserPreferences {
   theme: AppTheme;
   showNextSetRec: boolean;
   isTrainer: boolean;
+  onboardingDone: boolean;
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
@@ -16,6 +17,7 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   theme: 'dark',
   showNextSetRec: false,
   isTrainer: false,
+  onboardingDone: false,
 };
 
 function parse(raw: unknown): UserPreferences {
@@ -26,6 +28,7 @@ function parse(raw: unknown): UserPreferences {
     theme: r.theme === 'light' ? 'light' : r.theme === 'system' ? 'system' : 'dark',
     showNextSetRec: r.showNextSetRec === true,
     isTrainer: r.isTrainer === true,
+    onboardingDone: r.onboardingDone === true,
   };
 }
 

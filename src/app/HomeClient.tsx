@@ -16,6 +16,7 @@ import { getStreakCached, getDayStatsCached, type DayStats, type ExerciseTrend }
 import { type UserPreferences } from '@/lib/preferences';
 import { type ReadinessInfo } from '@/lib/insights';
 import { useClient } from '@/components/ClientProvider';
+import OnboardingModal from '@/components/OnboardingModal';
 import type { WorkoutSet } from '@/types';
 
 function pluralWorkouts(n: number): string {
@@ -95,6 +96,7 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
   const [todayStats, setTodayStats] = useState<DayStats | null>(initialTodayStats);
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set(CATEGORY_ORDER));
   const [layout] = useState(initialPreferences.exerciseLayout);
+  const [showOnboarding, setShowOnboarding] = useState(!initialPreferences.onboardingDone);
 
   // Pick one exercise per ready/fresh muscle group, prefer those with history
   const suggestedExercises = useMemo(() => {
@@ -376,6 +378,14 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
           onPause={handlePause}
           onReset={handleReset}
           onClose={() => setShowStopwatch(false)}
+        />
+      )}
+
+      {showOnboarding && (
+        <OnboardingModal
+          initialShowNextSetRec={initialPreferences.showNextSetRec}
+          initialIsTrainer={initialPreferences.isTrainer}
+          onDone={() => setShowOnboarding(false)}
         />
       )}
     </div>
