@@ -8,12 +8,14 @@ export interface UserPreferences {
   exerciseLayout: ExerciseLayout;
   theme: AppTheme;
   showNextSetRec: boolean;
+  isTrainer: boolean;
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   exerciseLayout: 'list',
   theme: 'dark',
   showNextSetRec: false,
+  isTrainer: false,
 };
 
 function parse(raw: unknown): UserPreferences {
@@ -23,6 +25,7 @@ function parse(raw: unknown): UserPreferences {
     exerciseLayout: r.exerciseLayout === 'grid' ? 'grid' : 'list',
     theme: r.theme === 'light' ? 'light' : r.theme === 'system' ? 'system' : 'dark',
     showNextSetRec: r.showNextSetRec === true,
+    isTrainer: r.isTrainer === true,
   };
 }
 

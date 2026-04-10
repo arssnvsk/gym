@@ -9,6 +9,7 @@ import type { User } from '@supabase/supabase-js';
 
 interface HeaderProps {
   user: User | null;
+  isTrainer: boolean;
 }
 
 function BurgerIcon() {
@@ -21,7 +22,7 @@ function BurgerIcon() {
   );
 }
 
-export default function Header({ user }: HeaderProps) {
+export default function Header({ user, isTrainer }: HeaderProps) {
   const t = useTranslations();
   const router = useRouter();
   const supabase = createClient();
@@ -89,14 +90,18 @@ export default function Header({ user }: HeaderProps) {
                 <span className="text-lg leading-none">💡</span>
                 <span className="font-medium">Советы</span>
               </button>
-              <div className="h-px bg-[var(--t-border2)]" />
-              <button
-                onClick={() => navigate('/clients')}
-                className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-[var(--t-text)] hover:bg-[var(--t-overlay)] active:bg-[var(--t-overlay-md)] transition-colors"
-              >
-                <span className="text-lg leading-none">👥</span>
-                <span className="font-medium">Клиенты</span>
-              </button>
+              {isTrainer && (
+                <>
+                  <div className="h-px bg-[var(--t-border2)]" />
+                  <button
+                    onClick={() => navigate('/clients')}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 text-sm text-[var(--t-text)] hover:bg-[var(--t-overlay)] active:bg-[var(--t-overlay-md)] transition-colors"
+                  >
+                    <span className="text-lg leading-none">👥</span>
+                    <span className="font-medium">Клиенты</span>
+                  </button>
+                </>
+              )}
               <div className="h-px bg-[var(--t-border2)]" />
               <button
                 onClick={() => navigate('/settings')}

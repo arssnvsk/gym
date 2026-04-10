@@ -19,6 +19,7 @@ export async function getServerPreferences(): Promise<UserPreferences> {
       exerciseLayout: s.exerciseLayout === 'grid' ? 'grid' : 'list',
       theme: s.theme === 'light' ? 'light' : s.theme === 'system' ? 'system' : 'dark',
       showNextSetRec: s.showNextSetRec === true,
+      isTrainer: s.isTrainer === true,
     };
   } catch {
     return DEFAULT_PREFERENCES;

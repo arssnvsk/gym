@@ -185,7 +185,7 @@ export default function HomeClient({ initialPreferences, initialStreak, initialR
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header user={user} />
+      <Header user={user} isTrainer={initialPreferences.isTrainer} />
 
       <main className="flex-1 px-4 pb-28 pt-4">
         {/* Streak */}
