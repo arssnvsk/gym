@@ -11,12 +11,14 @@ import AddSetModal from '@/components/AddSetModal';
 import MuscleMap from '@/components/MuscleMap';
 import { useClient } from '@/components/ClientProvider';
 import ClientBanner from '@/components/ClientBanner';
+import { computeNextSet } from '@/lib/recommendations';
 
 interface ExerciseClientProps {
   exercise: Exercise;
+  showNextSetRec: boolean;
 }
 
-export default function ExerciseClient({ exercise }: ExerciseClientProps) {
+export default function ExerciseClient({ exercise, showNextSetRec }: ExerciseClientProps) {
   const t = useTranslations();
   const router = useRouter();
   const { activeClient } = useClient();
@@ -29,6 +31,7 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+  const [showRecTooltip, setShowRecTooltip] = useState(false);
 
   const loadSets = useCallback(async () => {
     // Show cached data from IndexedDB immediately — no skeleton needed
@@ -138,6 +141,11 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
     expandedDates.add(firstDate);
   }
 
+  const nextSetRec = computeNextSet(
+    groupedByDay[0]?.daySets ?? [],
+    groupedByDay[1]?.daySets ?? [],
+  );
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Header */}
@@ -184,6 +192,51 @@ export default function ExerciseClient({ exercise }: ExerciseClientProps) {
                 <p className="text-sm">{t('exercise.noData')}</p>
               </div>
             ) : (<>
+            {/* Next set recommendation */}
+            {showNextSetRec && nextSetRec && (
+              <div className="bg-[var(--t-card)] border border-[var(--t-border)] rounded-2xl p-4">
+                <div className="flex items-center gap-1.5 mb-3">
+                  <p className="text-xs text-[var(--t-faint)] uppercase tracking-wider">
+                    {t('exercise.nextSet.title')}
+                  </p>
+                  <button
+                    onClick={() => setShowRecTooltip(v => !v)}
+                    className="text-[var(--t-icon)] hover:text-[var(--t-faint)] transition-colors leading-none"
+                    aria-label="Пояснение"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0Zm0 3.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Zm0 3.5a.75.75 0 0 1 .75.75v4a.75.75 0 0 1-1.5 0v-4A.75.75 0 0 1 8 7Z"/>
+                    </svg>
+                  </button>
+                </div>
+                {showRecTooltip && (
+                  <p className="text-xs text-[var(--t-faint)] mb-3 leading-relaxed">
+                    {t('exercise.nextSet.tooltip')}
+                  </p>
+                )}
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-2xl font-bold text-[var(--t-text)] tabular-nums">
+                    {nextSetRec.weight > 0 && (
+                      <>{nextSetRec.weight}<span className="text-sm font-normal text-[#FF5722] ml-1">{t('home.kg')}</span>{' × '}</>
+                    )}
+                    {nextSetRec.reps}<span className="text-sm font-normal text-[var(--t-faint)] ml-1">{t('home.lastReps')}</span>
+                  </p>
+                  <div className="flex flex-col items-end gap-1.5 shrink-0">
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
+                      nextSetRec.type === 'increase' ? 'text-green-400 bg-green-500/10 border-green-500/20' :
+                      nextSetRec.type === 'reduce'   ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' :
+                                                       'text-[#FF8A65] bg-[#FF5722]/10 border-[#FF5722]/20'
+                    }`}>
+                      {nextSetRec.type === 'increase' ? t('exercise.nextSet.increase') :
+                       nextSetRec.type === 'reduce'   ? t('exercise.nextSet.reduce') :
+                                                        t('exercise.nextSet.maintain')}
+                    </span>
+                    <span className="text-xs text-[var(--t-faint)]">RIR ~{nextSetRec.rir}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* PR + Volume row */}
             <div className="grid grid-cols-2 gap-3">
               {/* Personal Record */}

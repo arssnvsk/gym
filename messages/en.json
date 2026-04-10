@@ -54,7 +54,14 @@
     "confirmDelete": "Yes, delete",
     "cancelDelete": "Cancel",
     "progress": "Progress",
-    "regression": "Regression"
+    "regression": "Regression",
+    "nextSet": {
+      "title": "Recommended",
+      "tooltip": "Based on your last session: we check rep retention across sets and compare with the previous session average",
+      "increase": "↑ Progress",
+      "maintain": "→ Steady",
+      "reduce": "↓ Ease off"
+    }
   },
   "stopwatch": {
     "title": "Stopwatch",

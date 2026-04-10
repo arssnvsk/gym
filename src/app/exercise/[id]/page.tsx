@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getExerciseById, EXERCISES } from '@/lib/exercises';
+import { getServerPreferences } from '@/lib/preferences.server';
 import ExerciseClient from './ExerciseClient';
 
 interface Props {
@@ -16,5 +17,7 @@ export default async function ExercisePage({ params }: Props) {
   const exercise = getExerciseById(id);
   if (!exercise) notFound();
 
-  return <ExerciseClient exercise={exercise} />;
+  const { showNextSetRec } = await getServerPreferences();
+
+  return <ExerciseClient exercise={exercise} showNextSetRec={showNextSetRec} />;
 }

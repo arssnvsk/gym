@@ -70,6 +70,7 @@ export default function SettingsClient({ initialPreferences }: { initialPreferen
   const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [layout, setLayout] = useState<ExerciseLayout>(initialPreferences.exerciseLayout);
+  const [showNextSetRec, setShowNextSetRec] = useState(initialPreferences.showNextSetRec);
 
   function handleLayoutSelect(value: ExerciseLayout) {
     setLayout(value);
@@ -79,6 +80,12 @@ export default function SettingsClient({ initialPreferences }: { initialPreferen
 
   function handleThemeSelect(value: AppTheme) {
     setTheme(value);
+  }
+
+  function handleNextSetRecToggle() {
+    const next = !showNextSetRec;
+    setShowNextSetRec(next);
+    updatePreferences({ showNextSetRec: next });
   }
 
   return (
@@ -166,6 +173,29 @@ export default function SettingsClient({ initialPreferences }: { initialPreferen
             })}
           </div>
           <p className="text-xs text-[var(--t-icon)] mt-2">Применяется сразу, сохраняется автоматически</p>
+        </section>
+
+        {/* Recommendations */}
+        <section>
+          <p className="text-xs font-semibold text-[var(--t-faint)] uppercase tracking-wider mb-3">
+            Тренировки
+          </p>
+          <div className="bg-[var(--t-card)] border border-[var(--t-border)] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-[var(--t-text)]">Рекомендации подхода</p>
+              <p className="text-xs text-[var(--t-faint)] mt-0.5">Показывать вес и повторения для следующего подхода</p>
+            </div>
+            <button
+              onClick={handleNextSetRecToggle}
+              className={`relative shrink-0 w-11 h-6 rounded-full transition-colors duration-200 ${
+                showNextSetRec ? 'bg-[#FF5722]' : 'bg-[var(--t-border3)]'
+              }`}
+            >
+              <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                showNextSetRec ? 'translate-x-5' : 'translate-x-0'
+              }`} />
+            </button>
+          </div>
         </section>
       </main>
     </div>

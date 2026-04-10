@@ -7,11 +7,13 @@ export type AppTheme = 'dark' | 'light' | 'system';
 export interface UserPreferences {
   exerciseLayout: ExerciseLayout;
   theme: AppTheme;
+  showNextSetRec: boolean;
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   exerciseLayout: 'list',
   theme: 'dark',
+  showNextSetRec: false,
 };
 
 function parse(raw: unknown): UserPreferences {
@@ -20,6 +22,7 @@ function parse(raw: unknown): UserPreferences {
   return {
     exerciseLayout: r.exerciseLayout === 'grid' ? 'grid' : 'list',
     theme: r.theme === 'light' ? 'light' : r.theme === 'system' ? 'system' : 'dark',
+    showNextSetRec: r.showNextSetRec === true,
   };
 }
 
