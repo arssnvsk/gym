@@ -2,6 +2,17 @@ import { createClient } from '@/lib/supabase/client';
 import type { SetInput, WorkoutSet, ChartPoint } from '@/types';
 import * as localDb from '@/lib/db';
 
+const SUPABASE_TIMEOUT_MS = 5000;
+
+function withTimeout<T>(promise: PromiseLike<T>): Promise<T> {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), SUPABASE_TIMEOUT_MS)
+    ),
+  ]);
+}
+
 function generateId(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -34,8 +45,12 @@ export async function deleteSet(id: string): Promise<void> {
   }
 
   const supabase = createClient();
-  const { error } = await supabase.from('sets').delete().eq('id', id);
-  if (error) {
+  try {
+    const { error } = await withTimeout(supabase.from('sets').delete().eq('id', id));
+    if (error) {
+      await localDb.pushToQueue({ type: 'delete', payload: { id }, createdAt: Date.now() });
+    }
+  } catch {
     await localDb.pushToQueue({ type: 'delete', payload: { id }, createdAt: Date.now() });
   }
 }
@@ -53,21 +68,26 @@ export async function updateSet(id: string, data: Pick<SetInput, 'weight' | 'rep
   }
 
   const supabase = createClient();
-  const { data: updated, error } = await supabase
-    .from('sets')
-    .update(data)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    await localDb.pushToQueue({ type: 'update', payload: { id, data }, createdAt: Date.now() });
-    if (optimistic) return optimistic;
-    throw error;
+  let updated: WorkoutSet | null = null;
+  let updateError: Error | { message: string } | null = null;
+  try {
+    const result = await withTimeout(
+      supabase.from('sets').update(data).eq('id', id).select().single()
+    );
+    updated = result.data as WorkoutSet | null;
+    updateError = result.error;
+  } catch {
+    updateError = new Error('timeout');
   }
 
-  await localDb.upsertSet(updated);
-  return updated;
+  if (updateError) {
+    await localDb.pushToQueue({ type: 'update', payload: { id, data }, createdAt: Date.now() });
+    if (optimistic) return optimistic;
+    throw updateError;
+  }
+
+  await localDb.upsertSet(updated!);
+  return updated!;
 }
 
 export async function addSet(input: SetInput, userId: string, clientProfileId?: string | null): Promise<WorkoutSet> {
@@ -91,19 +111,20 @@ export async function addSet(input: SetInput, userId: string, clientProfileId?: 
   }
 
   const supabase = createClient();
-  const { data, error } = await supabase
-    .from('sets')
-    .insert({ ...localSet })
-    .select()
-    .single();
-
-  if (error) {
+  try {
+    const { data, error } = await withTimeout(
+      supabase.from('sets').insert({ ...localSet }).select().single()
+    );
+    if (error) {
+      await localDb.pushToQueue({ type: 'insert', payload: localSet, createdAt: Date.now() });
+      return localSet;
+    }
+    await localDb.upsertSet(data);
+    return data;
+  } catch {
     await localDb.pushToQueue({ type: 'insert', payload: localSet, createdAt: Date.now() });
     return localSet;
   }
-
-  await localDb.upsertSet(data);
-  return data;
 }
 
 function filterByClient(sets: WorkoutSet[], clientProfileId?: string | null): WorkoutSet[] {
