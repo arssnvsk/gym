@@ -150,7 +150,10 @@ export default function ExerciseClient({ exercise, showNextSetRec }: ExerciseCli
     <div className="flex flex-col min-h-screen">
       {/* Header */}
       <div className="sticky top-0 z-10">
-        <header className="flex items-center gap-3 px-4 py-1 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
+        <header
+          className="flex items-center gap-3 px-4 py-1 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]"
+          style={{ paddingTop: 'max(0.25rem, env(safe-area-inset-top))' }}
+        >
           <button
             onClick={() => router.back()}
             className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] active:bg-[var(--t-overlay)] transition-colors text-sm font-medium"

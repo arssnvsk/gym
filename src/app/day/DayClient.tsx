@@ -184,7 +184,10 @@ export default function DayClient() {
     <div className="flex flex-col min-h-screen">
       {/* Header */}
       <div className="sticky top-0 bg-[var(--t-bg)] z-10 border-b border-[var(--t-hover)]">
-        <div className="flex items-center gap-2 px-4 pt-2 pb-2">
+        <div
+          className="flex items-center gap-2 px-4 pb-2"
+          style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
+        >
           <Link
             href="/"
             className="flex items-center gap-1 h-11 pl-1 pr-3 -ml-1 rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] active:bg-[var(--t-overlay)] transition-colors text-sm font-medium shrink-0"

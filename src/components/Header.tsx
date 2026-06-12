@@ -57,7 +57,10 @@ export default function Header({ user, isTrainer }: HeaderProps) {
 
   return (
     <div className="sticky top-0 z-10">
-    <header className="flex items-center justify-between px-4 py-3 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
+    <header
+      className="flex items-center justify-between px-4 py-3 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]"
+      style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+    >
       <div className="flex items-center gap-2">
         {/* Burger menu */}
         <div className="relative" ref={menuRef}>

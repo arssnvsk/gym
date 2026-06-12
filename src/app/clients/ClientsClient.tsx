@@ -186,7 +186,10 @@ export default function ClientsClient({ userId }: Props) {
   return (
     <div className="flex flex-col min-h-screen bg-[var(--t-bg)]">
       {/* Header */}
-      <div className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]">
+      <div
+        className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 bg-[var(--t-bg-alpha)] backdrop-blur-md border-b border-[var(--t-border)]"
+        style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+      >
         <button
           onClick={() => router.push('/')}
           className="w-9 h-9 flex items-center justify-center rounded-xl text-[var(--t-muted)] hover:text-[var(--t-text)] hover:bg-[var(--t-overlay)] transition-colors"
